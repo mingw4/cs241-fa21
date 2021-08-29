@@ -4,7 +4,7 @@ Q1.
 
 #include <unistd.h>
 int main() {
-	write(1, "Hi! My name is Ming Wang.", 25);
+	write(1, "Hi! My name is Ming Wang", 24);
 	return 0;
 }
 
@@ -36,7 +36,7 @@ Q3.
 int main() {
 	mode_t mode = S_IRUSR | S_IWUSR;
 	int fildes = open("hello_world.txt", O_CREAT | O_TRUNC | O_RDWR, mode);
-	write(fildes, "Hi! My name is Ming Wang.", 25);
+	write(fildes, "Hi! My name is Ming Wang", 24);
 	close(fildes);
 	return 0;
 }
