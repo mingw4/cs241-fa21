@@ -8,13 +8,13 @@
 
 int main() {
     // Enter the string you want to test with the reference here.
-    char *input = "hello. welcome to cs241";
+    char *input = "变态中文测试.   Chinese test.";
 
     // This function prints the reference implementation output on the terminal.
     print_camelCaser(input);
 
     // Put your expected output for the given input above.
-    char *correct[] = {"hello", NULL};
+    char *correct[] = {"变态中文测试", "chineseTest", NULL};
     char *wrong[] = {"hello", "welcomeToCs241", NULL};
 
     // Compares the expected output you supplied with the reference output.
