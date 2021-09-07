@@ -22,7 +22,7 @@ int test_camelCaser(char **(*camelCaser)(const char *),
     }
     destroy(rt);
 
-    rt = (*camelCaser)("thisis madddddddddddddddd") 
+    rt = (*camelCaser)("thisis madddddddddddddddd"); 
     if (rt[0] != NULL) {
         destroy(rt);
         return 0;
@@ -109,7 +109,7 @@ int test_camelCaser(char **(*camelCaser)(const char *),
     }
     destroy(rt);
 
-    rt = (*camelCaser)("FFFFF.  WHATAahtata is this  \n for?")
+    rt = (*camelCaser)("FFFFF.  WHATAahtata is this  \n for?");
     if (rt[0] != "fffff") {
         destroy(rt);
         return 0;
@@ -133,8 +133,33 @@ int test_camelCaser(char **(*camelCaser)(const char *),
         return 0;
     }
 
+    if (rt[1] != "chineseTest") {
+        destroy(rt);
+        return 0;
+    
+    if (rt[2] != NULL) {
+        destroy(rt);
+        return 0;
+    }
+    destroy(rt);
 
+    rt = (*camelCaser)(".Mad tEst.");
+    if (rt[0] != "") {
+        destroy(rt);
+        return 0;
+    }
 
+    if (rt[1] != "madTest") {
+        destroy(rt);
+        return 0;
+    }
+
+    if (rt[2] != NULL) {
+        destroy(rt);
+        return 0;
+    }
+
+    destroy(rt);
 
     
     return 1;
