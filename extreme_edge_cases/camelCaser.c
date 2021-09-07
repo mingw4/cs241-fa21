@@ -7,6 +7,9 @@
 #include <string.h>
 #include <ctype.h>
 
+
+void to_word(const char *w, int lnth, char *rt);
+
 char **camel_caser(const char *input_str) {
     // TODO: Implement me!
     if (input_str == NULL) {
