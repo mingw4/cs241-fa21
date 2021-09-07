@@ -31,7 +31,7 @@ int test_camelCaser(char **(*camelCaser)(const char *),
 
 
 
-    rt = (*camelCaser)("/\,.>?");
+    rt = (*camelCaser)("/,.>?");
     if (strcmp(rt[0], "")) {
         destroy(rt);
         return 0;
@@ -55,12 +55,8 @@ int test_camelCaser(char **(*camelCaser)(const char *),
         return 0;
     }
 
-    if (strcmp(rt[5], "")) {
-        destroy(rt);
-        return 0;
-    }
 
-    if (rt[6] != NULL) {
+    if (rt[5] != NULL) {
         destroy(rt);
         return 0;
     }
@@ -68,25 +64,26 @@ int test_camelCaser(char **(*camelCaser)(const char *),
 
 
     rt = (*camelCaser)("CS241 is Literally mad.");
-    if (strcmp(rt[0], "cS241IsLiteralyMad")) {
+    if (strcmp(rt[0], "cS241IsLiteralyMad") != 0) {
         destroy(rt);
         return 0;
     }
     if (rt[1] != NULL) {
+        destroy(rt);
         return 0;
     }
     destroy(rt);
 
     rt = (*camelCaser)("WWw. WHWHWH nmmi. TREfefdds.");
-    if (strcmp(rt[0], "wwww")) {
+    if (strcmp(rt[0], "wwww") != 0) {
         destroy(rt);
         return 0;
     }
-    if (strcmp(rt[1], "whwhwhNmmi")) {
+    if (strcmp(rt[1], "whwhwhNmmi") != 0) {
         destroy(rt);
         return 0;
     }
-    if (strcmp(rt[2], "trefefdds")) {
+    if (strcmp(rt[2], "trefefdds") != 0) {
         destroy(rt);
         return 0;
     }
@@ -99,7 +96,7 @@ int test_camelCaser(char **(*camelCaser)(const char *),
 
 
     rt = (*camelCaser)("241Nonsense.");
-    if (strcmp(rt[0], "241nonsense")) {
+    if (strcmp(rt[0], "241nonsense") != 0) {
         destroy(rt);
         return 0;
     }
@@ -110,12 +107,12 @@ int test_camelCaser(char **(*camelCaser)(const char *),
     destroy(rt);
 
     rt = (*camelCaser)("FFFFF.  WHATAahtata is this  \n for?");
-    if (strcmp(rt[0], "fffff")) {
+    if (strcmp(rt[0], "fffff") != 0) {
         destroy(rt);
         return 0;
     }
 
-    if (strcmp(rt[1], "whatahtataIsThisFor")) {
+    if (strcmp(rt[1], "whatahtataIsThisFor") != 0) {
         destroy(rt);
         return 0;
     }
@@ -128,14 +125,15 @@ int test_camelCaser(char **(*camelCaser)(const char *),
     destroy(rt);
 
     rt = (*camelCaser)("变态中文测试.   Chinese test."); 
-    if (strcmp(rt[0], "变态中文测试")) {
+    if (strcmp(rt[0], "变态中文测试") != 0) {
         destroy(rt);
         return 0;
     }
 
-    if (strcmp(rt[1], "chineseTest")) {
+    if (strcmp(rt[1], "chineseTest") != 0) {
         destroy(rt);
         return 0;
+    }
     
     if (rt[2] != NULL) {
         destroy(rt);
@@ -144,12 +142,12 @@ int test_camelCaser(char **(*camelCaser)(const char *),
     destroy(rt);
 
     rt = (*camelCaser)(".Mad tEst.");
-    if (strcmp(rt[0], "")) {
+    if (strcmp(rt[0], "") != 0) {
         destroy(rt);
         return 0;
     }
 
-    if (strcmp(rt[1], "madTest")) {
+    if (strcmp(rt[1], "madTest") != 0) {
         destroy(rt);
         return 0;
     }
