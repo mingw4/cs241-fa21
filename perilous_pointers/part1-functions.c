@@ -104,14 +104,14 @@ void six(const char *str) {
  * Creates an array of values containing the values {0.0, 0.1, ..., 0.9}.
  */
 void seven() {
-    float values[10];
+    float *values = malloc(10 * sizeof(float));
 
-    int i, n = 10;
+    float n = 10;
 
-    for (i = 0; i < n; i++)
-        values[i] = (float)i / n;
+    for (int i = 0; i < n; i++)
+        values[i] = ((float) i) / ((float) n);
 
-    for (i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
         printf("%f ", values[i]);
     printf("\n");
 }
@@ -135,6 +135,7 @@ void eight(int a) {
     printf("\n");
     for (long unsigned j = 0; j < 10; j++) {
         free(values[j]);
+        values[j] = NULL;
     }
 
     free(values);
@@ -151,18 +152,12 @@ void eight(int a) {
  *     Input parameter, used to determine which string is printed.
  */
 void nine(const char *s) {
-    switch (s) {
-    case "blue":
-        printf("Orange and BLUE!\n");
-        break;
-
-    case "orange":
+    if (strcmp(s, "blue") == 0) {
+        printf("Orange and BLUE\n");
+    } else if (strcmp(s, "orange") == 0) {
         printf("ORANGE and blue!\n");
-        break;
-
-    default:
+    } else {
         printf("orange and blue!\n");
-        break;
     }
 }
 
@@ -173,7 +168,7 @@ void nine(const char *s) {
  *     The diameter of the circle.
  */
 void ten(const int d) {
-    printf("The radius of the circle is: %f.\n", d / 2);
+    printf("The radius of the circle is: %f.\n", (0.5 * ((float) d)));
 }
 
 /**
@@ -201,7 +196,8 @@ void ten(const int d) {
  */
 void clear_bits(long int value, long int flag) {
     // TODO clear_bits
-    long int cleared_value = 0;
+    long int cleared_value = ~flag & value;
+    value = cleared_value;
     printf("cleared_value: %ld\n", cleared_value);
 }
 
@@ -233,5 +229,10 @@ void clear_bits(long int value, long int flag) {
 void little_automaton(int (*transition)(int, char), const char *input_string) {
     int state = 0;
     // put something here
+    while(*input_string) {
+        state = (*transition)(state, *input_string);
+        input_string++;
+    }
+
     printf("final state: %d\n", state);
 }
