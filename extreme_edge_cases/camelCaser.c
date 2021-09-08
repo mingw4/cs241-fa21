@@ -32,6 +32,7 @@ char **camel_caser(const char * input_str) {
     for (unsigned long k = 0; k < len; k++) {
         if (ispunct(input_str[k])) {
             sen = malloc(sizeof(char*) * (1 + idx_char));
+            result[itr_sen] = sen; 
             result[itr_sen][idx_char] = '\0';
             itr_sen = itr_sen + 1;
             idx_char = 0;
@@ -57,6 +58,8 @@ char **camel_caser(const char * input_str) {
             flag_upp = false;
             flag_first = true;
             idx_char = 0;
+        } else if (isspace(input_str[l])) {
+            flag_upp = true;
         } else {
             if (isalpha(input_str[l])) {
                 if (flag_upp && !flag_first) {
@@ -79,7 +82,7 @@ char **camel_caser(const char * input_str) {
 
 void destroy(char **result) {
     // TODO: Implement me!
-    for (char** i = result; (*i) != NULL; i++) {
+    for (char** i = result; (*i); i++) {
         free(*i);
     }
 
