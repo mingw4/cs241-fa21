@@ -13,5 +13,15 @@
  */
 int main() {
     // your code here
+    first_step(81);
+    int a = 132;
+    second_step(&a);
+    int b = 8942;
+    int *c = &b;
+    int **d = &c;
+    double_step(d);
+    char arr[] = {0, 0, 0, 0, 0, 15, 0};
+    strange_step(arr);
+
     return 0;
 }
