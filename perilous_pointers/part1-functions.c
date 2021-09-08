@@ -154,7 +154,7 @@ void eight(int a) {
  */
 void nine(const char *s) {
     if (strcmp(s, "blue") == 0) {
-        printf("Orange and BLUE\n");
+        printf("Orange and BLUE!\n");
     } else if (strcmp(s, "orange") == 0) {
         printf("ORANGE and blue!\n");
     } else {
