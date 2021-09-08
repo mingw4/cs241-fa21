@@ -19,7 +19,6 @@
  */
 char **camel_caser(const char *input_str);
 
-void to_word(const char *w, int lnth, char *rt);
 
 /**
  * Destroys the camelCased output returned by the camel_caser() function.

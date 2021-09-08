@@ -32,25 +32,25 @@ int test_camelCaser(char **(*camelCaser)(const char *),
 
 
     rt = (*camelCaser)("/,.>?");
-    if (strcmp(rt[0], "")) {
+    if (strcmp(rt[0], "") != 0) {
         destroy(rt);
         return 0;
     }
-    if (strcmp(rt[1], "")) {
+    if (strcmp(rt[1], "") != 0) {
         destroy(rt);
         return 0;
     }
-    if (strcmp(rt[2], "")) {
-        destroy(rt);
-        return 0;
-    }
-
-    if (strcmp(rt[3], "")) {
+    if (strcmp(rt[2], "") != 0) {
         destroy(rt);
         return 0;
     }
 
-    if (strcmp(rt[4], "")) {
+    if (strcmp(rt[3], "") != 0) {
+        destroy(rt);
+        return 0;
+    }
+
+    if (strcmp(rt[4], "") != 0) {
         destroy(rt);
         return 0;
     }
@@ -64,7 +64,7 @@ int test_camelCaser(char **(*camelCaser)(const char *),
 
 
     rt = (*camelCaser)("CS241 is Literally mad.");
-    if (strcmp(rt[0], "cS241IsLiteralyMad") != 0) {
+    if (strcmp(rt[0], "cs241IsLiterallyMad") != 0) {
         destroy(rt);
         return 0;
     }
@@ -112,7 +112,7 @@ int test_camelCaser(char **(*camelCaser)(const char *),
         return 0;
     }
 
-    if (strcmp(rt[1], "whatahtataIsThisFor") != 0) {
+    if (strcmp(rt[1], "whataahtataIsThisFor") != 0) {
         destroy(rt);
         return 0;
     }
