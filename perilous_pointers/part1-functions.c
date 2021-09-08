@@ -71,6 +71,7 @@ void three(const int *x, const int *y) {
 float *four(const int *x) {
     float *p = malloc(sizeof(float));
     *p = (float)(*x);
+    printf("%d == %f\n", *x, *p);
     return p;
 }
 
