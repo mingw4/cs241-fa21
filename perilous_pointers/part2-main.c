@@ -32,6 +32,19 @@ int main() {
     char* h = "cccsk";
     step_step_step(h, h + 2, h);
 
-    
+    char* i = "x";
+    it_may_be_odd(i, 'x');
+
+    char j[] = "tourturing,CS241,seriously";
+    tok_step(j);
+
+    char k[5];
+    k[0] = 1;
+    k[1] = 1;
+    k[2] = 1;
+    k[3] = 3;
+    k[4] = '\0';
+    the_end((void*) k, (void*)k);
+
     return 0;
 }
