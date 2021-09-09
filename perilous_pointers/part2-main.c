@@ -20,8 +20,18 @@ int main() {
     int *c = &b;
     int **d = &c;
     double_step(d);
-    char arr[] = {0, 0, 0, 0, 0, 15, 0};
-    strange_step(arr);
+    char e[] = {1, 2, 3, 4, 5, 15, 0, 0, 0, 0};
+    strange_step(e);
 
+    char* f = "abc";
+    empty_step((void*) f);
+
+    char* g = "uuuuuuuuuu";
+    two_step((void*) g, g);
+    three_step(g, g + 2, g + 4);
+    char* h = "cccsk";
+    step_step_step(h, h + 2, h);
+
+    
     return 0;
 }
