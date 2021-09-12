@@ -110,7 +110,7 @@ vector *vector_create(copy_constructor_type copy_constructor,
     } else {
         vec->default_constructor = shallow_default_constructor;
     }
-    return NULL;
+    return vec;
 }
 
 void vector_destroy(vector *this) {
@@ -236,6 +236,7 @@ void vector_push_back(vector *this, void *element) {
         this->array = realloc(this->array, (sizeof(void*) * this->capacity));
     }
     this->array[this->size] = this->copy_constructor(element);
+    this->size = this->size + 1;
 }
 
 void vector_pop_back(vector *this) {
