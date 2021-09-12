@@ -257,6 +257,7 @@ void vector_insert(vector *this, size_t position, void *element) {
         this->array[p] = this->array[p - 1];
     }
     this->array[position] = this->copy_constructor(element);
+    this->size = this->size + 1;
 }
 
 void vector_erase(vector *this, size_t position) {
