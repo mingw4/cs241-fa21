@@ -231,7 +231,7 @@ void **vector_back(vector *this) {
 void vector_push_back(vector *this, void *element) {
     assert(this);
     // your code here    
-    if (this->capacity == this->size) {
+    if (this->capacity <= this->size) {
         this->capacity = get_new_capacity(this->capacity + 1);
         this->array = realloc(this->array, (sizeof(void*) * this->capacity));
     }
