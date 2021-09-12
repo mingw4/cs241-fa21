@@ -110,7 +110,7 @@ vector *vector_create(copy_constructor_type copy_constructor,
     } else {
         vec->default_constructor = shallow_default_constructor;
     }
-
+    return NULL;
 }
 
 void vector_destroy(vector *this) {
@@ -262,10 +262,19 @@ void vector_erase(vector *this, size_t position) {
     assert(this);
     assert(position < vector_size(this));
     // your code here
+    this->destructor(this->array[position]);
+    for (size_t q = position; this->size > q; q++) {
+        this->array[q] = this->array[q + 1];
+    }
+    this->size = this->size - 1;
 }
 
 void vector_clear(vector *this) {
     // your code here
+    for (size_t r = 0; this->size > r; r++) {
+        this->destructor(this->array[r]);
+    }
+    this->size = 0;
 }
 
 // The following is code generated:
