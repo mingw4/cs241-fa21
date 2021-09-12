@@ -12,5 +12,8 @@ int main(int argc, char *argv[]) {
     printf("sliced is: %s\n", sliced);
     free(sliced);
     sstring_destroy(test);
+
+
+
     return 0;
 }

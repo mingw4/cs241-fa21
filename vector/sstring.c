@@ -46,7 +46,7 @@ vector *sstring_split(sstring *this, char delimiter) {
     char* first = this->s;
     for(;first < this->s + strlen(this->s);) {
         char* last = strchr(first, delimiter);
-        if (last != NULL) {
+        if (!last) {
             vector_push_back(vec, first);
             return vec;
         }
