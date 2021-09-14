@@ -44,7 +44,7 @@ vector *sstring_split(sstring *this, char delimiter) {
     // your code goes here
     vector* vec = vector_create(string_copy_constructor, string_destructor, string_default_constructor);
     char* first = this->s;
-    for(;first < this->s + strlen(this->s);) {
+    for(;first <= this->s + strlen(this->s);) {
         char* last = strchr(first, delimiter);
         if (!last) {
             vector_push_back(vec, first);
