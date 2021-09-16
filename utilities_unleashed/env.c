@@ -4,8 +4,12 @@
  */
 #include "format.h"
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <ctype.h>
 
 int main(int argc, char *argv[]) {
 
@@ -21,7 +25,6 @@ int main(int argc, char *argv[]) {
                 if (!v) {
                     print_env_usage();
                 }
-                char* buffer = k;
                 for (char* itr = k; itr; itr++) {
                     if (*itr != '_' && (!isdigit(*itr)) && (!isalpha(*itr))) {
                         print_env_usage();
@@ -36,7 +39,7 @@ int main(int argc, char *argv[]) {
                 } else {
                     v = getenv(v + 1);
                     if (!v) {
-                        print_environment_change_failed;
+                        print_environment_change_failed();
                     }
                 }
                 if (setenv(k, v, 1) < 0) {
@@ -44,7 +47,7 @@ int main(int argc, char *argv[]) {
                 }
             } else {
                 execvp(argv[n + 1], argv + n + 1);
-                print_exec_failed;
+                print_exec_failed();
             }
         }
         print_env_usage();
