@@ -18,21 +18,21 @@ int main(int argc, char *argv[]) {
     }
     pid_t p = fork();
     if (p == 0) {
-        for (unsigned int n = 0; argv[n]; n++) {
+        for (unsigned int n = 1; argv[n]; n++) {
             if (strcmp("--", argv[n])) {
                 char* v = strtok(NULL, "");
                 char* k = strtok(argv[n], "=");
                 if (!v) {
                     print_env_usage();
                 }
-                for (char* itr = k; itr; itr++) {
-                    if (*itr != '_' && (!isdigit(*itr)) && (!isalpha(*itr))) {
+                for (char* itr = k; (*itr); itr++) {
+                    if (!(isalpha(*itr) || isdigit(*itr) || *itr == '_')) {
                         print_env_usage();
                     }
                 }
                 if (v[0] != '%') {
-                    for (char* itr = v; itr; itr++) {
-                        if (*itr != '_' && (!isdigit(*itr)) && (!isalpha(*itr))) {
+                    for (char* itr = v; (*itr); itr++) {
+                        if (!(isalpha(*itr) || isdigit(*itr) || *itr == '_')) {
                             print_environment_change_failed();
                         }
                     }
