@@ -21,7 +21,6 @@ int Fg (char * cmd);
 void destroy_();
 void Open_source(int argc, char *argv[]);
 void Exit_source();
-void logical_command(vector * a ,char * b);
 
 typedef struct process {
     char *command;
@@ -70,14 +69,7 @@ void Open_source(int argc, char *argv[]) {
     int p;
     while ((p = getopt(argc, argv, "h:f:")) != -1) {
 
-        if (p == 'f') {
-            FILE *r = fopen(optarg, "r");
-            if (!r) {
-                print_script_file_error();
-                exit(1);
-            }
-            source = r;
-        } else if (p == 'h') {
+        if (p == 'h') {
             FILE *w = fopen(optarg, "r");
             if (!w) {
                 print_history_file_error();
@@ -96,7 +88,14 @@ void Open_source(int argc, char *argv[]) {
             fclose(w);
             w = NULL;
             hst_in = get_full_path(optarg);
-        }  
+        } else if (p == 'f') {
+            FILE *r = fopen(optarg, "r");
+            if (!r) {
+                print_script_file_error();
+                exit(1);
+            }
+            source = r;
+        }
     }
 }
 
@@ -130,6 +129,28 @@ int Fg(char *cmd) {
             bg = 1;
         }
         pid_t f_ = fork();
+        if (f_ < 0) {
+            print_fork_failed();
+            exit(1);
+        }
+        if (f_ == 0) {
+            if (bg == 1) {
+                cmd[strlen (cmd) - 1] = '\0';
+            }
+            vector *p = sstring_split(cstr_to_sstring(cmd), ' ');
+            char *tet[vector_size(p)+1];
+            for (size_t i = 0; i < vector_size(p); i++) {
+                tet[i] = (char *) vector_get(p, i);
+            }
+            if (!strcmp(tet[vector_size(p)-1], ""))
+                tet[vector_size(p)-1] = NULL;
+            else
+                tet[vector_size(p)] = NULL;
+            print_command_executed(getpid());
+            execvp(tet[0], tet);
+            print_exec_failed(tet[0]);
+            exit(1);
+        }
         if (f_ > 0) {
             process *tmp = calloc(1, sizeof(Present));
             tmp->command = calloc(strlen(cmd) + 1, sizeof(char));
@@ -159,27 +180,7 @@ int Fg(char *cmd) {
                 }
             }
         }
-        if (f_ == 0) {
-            if (bg == 1) {
-                cmd[strlen (cmd) - 1] = '\0';
-            }
-            vector *p = sstring_split(cstr_to_sstring(cmd), ' ');
-            char *tet[vector_size(p)+1];
-            for (size_t i = 0; i < vector_size(p); i++) {
-                tet[i] = (char *) vector_get(p, i);
-            }
-            if (!strcmp(tet[vector_size(p)-1], ""))
-                tet[vector_size(p)-1] = NULL;
-            else
-                tet[vector_size(p)] = NULL;
-            print_command_executed(getpid());
-            execvp(tet[0], tet);
-            print_exec_failed(tet[0]);
-            exit(1);
-        } else {
-            print_fork_failed();
-            exit(1);
-        }
+
 
 
     }
