@@ -5,6 +5,7 @@
 #include "format.h"
 #include "shell.h"
 #include "vector.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include "sstring.h"
 #include <unistd.h>
@@ -13,6 +14,7 @@
 #include <sys/wait.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <string.h>
 
 void sgn_(int sig);
 int Fg (char * cmd);
@@ -35,8 +37,8 @@ static FILE *source = NULL;
 
 void sgn_(int sig) {
     if (SIGCHLD == sig) {
-        pid_t p;
-        while (p = waitpid(-1, 0, WNOHANG) > 0) {
+        pid_t p = waitpid(-1, 0,  WNOHANG);
+        while (p > 0) {
             size_t input_length = vector_size(Present);
             for (unsigned long j = 0; j < input_length; j++) {
                 process *tmp = (process*) vector_get(Present, j);
@@ -47,6 +49,7 @@ void sgn_(int sig) {
                     return;
                 }
             }
+            p = waitpid(-1, 0,  WNOHANG);
         }
     }
 }
@@ -70,24 +73,26 @@ void Open_source(int argc, char *argv[]) {
         if (p == 'f') {
             FILE *r = fopen(optarg, "r");
             if (!r) {
-                print_script_source_error();
+                print_script_file_error();
                 exit(1);
             }
             source = r;
         } else if (p == 'h') {
             FILE *w = fopen(optarg, "r");
             if (!w) {
-                print_hst_source_error();
+                print_history_file_error();
                 exit(1);
             }
-            char *b = NULL;
+            char *b_ = NULL;
             size_t b_size = 0;
 
-            while (getline(&b, &b_size, w) != -1) {
-                if (b[strlen(b) - 1] == '\n') b[strlen(b) - 1] = '\0';
-                vector_push_back(hst, (void *)b);
+            while (getline(&b_, &b_size, w) != -1) {
+                if (b_[strlen(b_) - 1] == '\n') {
+                    b_[strlen(b_) - 1] = '\0';
+                }
+                vector_push_back(hst, (void *)b_);
             }
-            free(b);
+            free(b_);
             fclose(w);
             w = NULL;
             hst_in = get_full_path(optarg);
@@ -158,16 +163,16 @@ int Fg(char *cmd) {
             if (bg == 1) {
                 cmd[strlen (cmd) - 1] = '\0';
             }
-            vector *aa = sstring_split(cstr_to_sstring(cmd), ' ');
-            char *tet[vector_size(aa)+1];
-            for (size_t i = 0; i < vector_size(aa); i++) {
-                tet[i] = (char *) vector_get(aa, i);
+            vector *p = sstring_split(cstr_to_sstring(cmd), ' ');
+            char *tet[vector_size(p)+1];
+            for (size_t i = 0; i < vector_size(p); i++) {
+                tet[i] = (char *) vector_get(p, i);
             }
-            if (!strcmp(tet[vector_size(aa)-1], ""))
-                tet[vector_size(aa)-1] = NULL;
+            if (!strcmp(tet[vector_size(p)-1], ""))
+                tet[vector_size(p)-1] = NULL;
             else
-                tet[vector_size(aa)] = NULL;
-            print_cmd_executed(getpid());
+                tet[vector_size(p)] = NULL;
+            print_command_executed(getpid());
             execvp(tet[0], tet);
             print_exec_failed(tet[0]);
             exit(1);
@@ -207,7 +212,9 @@ int shell(int argc, char *argv[]) {
 
         if (b > 0 && in[b - 1] == '\n') {
             in[b - 1] = '\0';
-            if (source != stdin) print_cmd(in);
+            if (source != stdin) {
+                print_command(in);
+            }
         }
 
         if (-1 == b) {
@@ -219,19 +226,21 @@ int shell(int argc, char *argv[]) {
 
         if (!strcmp(in, "!hst")) {
             for (unsigned long j = 0; j < hst_size; j++) {
-                print_hst_line(j, (char *) vector_get(hst, j));
+                print_history_line(j, (char *) vector_get(hst, j));
             }
         } else if (in[0] == '!') {
             for (int itr = hst_size - 1; itr >= 0 ; itr--) {
                 char *cmd = (char *)vector_get(hst, itr);
 
                 if (in[1] == '\0' || !strncmp(in + 1, cmd, strlen(in + 1))) {
-                    print_cmd(cmd); vector_push_back(hst, cmd); Fg(cmd);
+                    print_command(cmd);
+                    vector_push_back(hst, cmd);
+                    Fg(cmd);
                     break;
                 }
 
                 while (itr == 0) {
-                    print_no_hst_match();
+                    print_no_history_match();
                     break;
                 }
             }
@@ -243,13 +252,15 @@ int shell(int argc, char *argv[]) {
                 print_invalid_index();
             } else {
                 char *cmd = (char *)vector_get(hst, num);
-                print_cmd(cmd); vector_push_back(hst, cmd); Fg(cmd);
+                print_command(cmd);
+                vector_push_back(hst, cmd);
+                Fg(cmd);
             }
         } else if (!strcmp(in,"exit")) {
             destroy_(); 
             break;
         } else {
-            vector_push_inack(hst, in);
+            vector_push_back(hst, in);
             int flag_ = 0;
             sstring *sstring_ = cstr_to_sstring(in);
             vector *pt = sstring_split(sstring_, ' ');
@@ -287,8 +298,8 @@ int shell(int argc, char *argv[]) {
             if (!flag_) {
                 Fg(in);
             }
-            vector_destroin(pt);
-            sstring_destroin(sstring_);
+            vector_destroy(pt);
+            sstring_destroy(sstring_);
         }
     }
 
