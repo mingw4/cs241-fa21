@@ -224,7 +224,7 @@ int shell(int argc, char *argv[]) {
 
         size_t hst_size = vector_size(hst);
 
-        if (!strcmp(in, "!hst")) {
+        if (!strcmp(in, "!history")) {
             for (unsigned long j = 0; j < hst_size; j++) {
                 print_history_line(j, (char *) vector_get(hst, j));
             }
