@@ -200,24 +200,24 @@ int shell(int argc, char *argv[]) {
 
 
     char *in = NULL;
-    size_t bsize = 0;
-    ssize_t b;
+    size_t b_size = 0;
+    ssize_t b_;
     while (1) {
 
         char *full_path = get_full_path("./");
         print_prompt(full_path, getpid());
         free(full_path);
 
-        b = getline(&in,&bsize, source);
+        b_ = getline(&in,&b_size, source);
 
-        if (b > 0 && in[b - 1] == '\n') {
-            in[b - 1] = '\0';
+        if (b_ > 0 && in[b_ - 1] == '\n') {
+            in[b_ - 1] = '\0';
             if (source != stdin) {
                 print_command(in);
             }
         }
 
-        if (-1 == b) {
+        if (-1 == b_) {
         destroy_();
         break;
         }
