@@ -20,18 +20,25 @@ void *mini_malloc(size_t request_size, const char *filename,
     if (request_size == 0) {
         return NULL;
     }
-    void* mem = malloc(sizeof(meta_data) + request_size);
+    meta_data* mem = malloc(sizeof(meta_data) + request_size);
     if (mem == NULL) {
-        return NULL;
+        return mem;
     }
-    meta_data* mt = (meta_data*) mem;
-    void* voke = mem + sizeof(meta_data);
-    mt->request_size = request_size;
-    mt->filename = filename;
-    mt->instruction = instruction;
-    mt->next = head;
-    head = mt;
-    return voke;
+    mem->filename = filename;
+    mem->request_size = request_size;
+    mem->instruction = instruction;
+    mem->next = NULL;
+    if(head == NULL) {
+        head = mem;
+    } else {
+        meta_data* buffer = head;
+        while(buffer->next) {
+            buffer = buffer->next;
+        }
+        buffer->next = mem;
+    }
+    total_memory_requested = total_memory_requested + request_size;
+    return (void*)(mem + 1);
 }
 
 int addr_invalid(void* payload) {
