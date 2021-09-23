@@ -12,7 +12,7 @@ int addr_invalid(void*);
 size_t total_memory_freed = 0;
 size_t total_memory_requested = 0;
 size_t invalid_addresses = 0;
-meta_data* heaad = NULL;
+meta_data* head = NULL;
 
 void *mini_malloc(size_t request_size, const char *filename,
                   void *instruction) {
