@@ -1,5 +1,5 @@
 /**
- * shell.
+ * shell
  * CS 241 - Fall 2021
  */
 #include "format.h"
@@ -25,10 +25,7 @@ void Exit_source();
 typedef struct process {
     char *command;
     pid_t pid;
-
 } process;
-
-void print_proc_info(const process *p);
 
 static vector *Present;
 static vector *hst = NULL;
@@ -116,7 +113,7 @@ void Exit_source() {
 
 int Fg(char *cmd) {
     if (!strncmp(cmd,"cd",2)) {
-        cmd += 3;
+        cmd = cmd + 3;
         if (chdir(cmd) < 0) {
             print_no_directory(cmd);
             return 1;
@@ -261,14 +258,6 @@ int shell(int argc, char *argv[]) {
         } else if (!strcmp(in,"exit")) {
             destroy_(); 
             break;
-        } else if (!strcmp(in, "ps")) {
-            size_t len = vector_size(Present);
-            process_info proc_info;
-            print_process_info_header();
-            for (size_t j = 0; j < len; ++j) {
-                process *p = vector_at(Present, j);
-                print_proc_info(p);
-            }
         } else {
             vector_push_back(hst, in);
             int flag_ = 0;
@@ -318,8 +307,4 @@ int shell(int argc, char *argv[]) {
     Exit_source();
 
     return 0;
-}
-
-void print_proc_info(const process *p) {
-
 }
