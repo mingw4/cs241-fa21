@@ -1,5 +1,5 @@
 /**
- * shell
+ * shell.
  * CS 241 - Fall 2021
  */
 #include "format.h"
@@ -25,7 +25,10 @@ void Exit_source();
 typedef struct process {
     char *command;
     pid_t pid;
+
 } process;
+
+void print_proc_info(const process *p);
 
 static vector *Present;
 static vector *hst = NULL;
@@ -71,22 +74,20 @@ void Open_source(int argc, char *argv[]) {
 
         if (p == 'h') {
             FILE *w = fopen(optarg, "r");
-            if (!w) {
-                print_history_file_error();
-                exit(1);
-            }
-            char *b_ = NULL;
-            size_t b_size = 0;
+            if (w != NULL) {
+                char *b_ = NULL;
+                size_t b_size = 0;
 
-            while (getline(&b_, &b_size, w) != -1) {
-                if (b_[strlen(b_) - 1] == '\n') {
-                    b_[strlen(b_) - 1] = '\0';
+                while (getline(&b_, &b_size, w) != -1) {
+                    if (b_[strlen(b_) - 1] == '\n') {
+                        b_[strlen(b_) - 1] = '\0';
+                    }
+                    vector_push_back(hst, (void *)b_);
                 }
-                vector_push_back(hst, (void *)b_);
+                free(b_);
+                fclose(w);
+                w = NULL;
             }
-            free(b_);
-            fclose(w);
-            w = NULL;
             hst_in = get_full_path(optarg);
         } else if (p == 'f') {
             FILE *r = fopen(optarg, "r");
@@ -115,7 +116,7 @@ void Exit_source() {
 
 int Fg(char *cmd) {
     if (!strncmp(cmd,"cd",2)) {
-        cmd = cmd + 3;
+        cmd += 3;
         if (chdir(cmd) < 0) {
             print_no_directory(cmd);
             return 1;
@@ -260,6 +261,14 @@ int shell(int argc, char *argv[]) {
         } else if (!strcmp(in,"exit")) {
             destroy_(); 
             break;
+        } else if (!strcmp(in, "ps")) {
+            size_t len = vector_size(Present);
+            process_info proc_info;
+            print_process_info_header();
+            for (size_t j = 0; j < len; ++j) {
+                process *p = vector_at(Present, j);
+                print_proc_info(p);
+            }
         } else {
             vector_push_back(hst, in);
             int flag_ = 0;
@@ -309,4 +318,8 @@ int shell(int argc, char *argv[]) {
     Exit_source();
 
     return 0;
+}
+
+void print_proc_info(const process *p) {
+
 }
