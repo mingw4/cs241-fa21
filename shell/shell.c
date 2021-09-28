@@ -26,6 +26,7 @@ void destroy_();
 void Open_source(int argc, char *argv[]);
 void Exit_source();
 char *copy_string(const char *s);
+int str_starts_with(const char *s, const char *prefix);
 
 typedef struct process {
     char *command;
@@ -34,6 +35,7 @@ typedef struct process {
 
 void print_proc_info(pid_t pid, char *command);
 long get_uptime();
+process *find_process_by_id( pid_t pid);
 
 static vector *Present;
 static vector *hst = NULL;
@@ -190,6 +192,9 @@ int Fg(char *cmd) {
             if (fd != -1) {
                 dup2(fd, STDIN_FILENO);
                 close(fd);
+            } else {
+                print_redirection_file_error();
+                exit(1);
             }
             free(input_file);
         }
@@ -205,6 +210,9 @@ int Fg(char *cmd) {
             if (fd != -1) {
                 dup2(fd, STDOUT_FILENO);
                 close(fd);
+            } else {
+                print_redirection_file_error();
+                exit(1);
             }
             free(output_file);
         }
@@ -329,6 +337,36 @@ int shell(int argc, char *argv[]) {
                 print_proc_info(p->pid, p->command);
             }
             print_proc_info(getpid(), argv[0]);
+        } else if (strcmp(in, "stop") == 0 || str_starts_with(in, "stop ")) {
+            char *cmd = strtok(in, " ");
+            char *pid_str = strtok(NULL, " ");
+            if (pid_str == NULL) {
+                print_invalid_command(cmd);
+            } else {
+                pid_t pid = atoi(pid_str);
+                process *proc = find_process_by_id(pid);
+                if (proc == NULL) {
+                    print_no_process_found(pid);
+                } else {
+                    kill(pid, SIGSTOP);
+                    print_stopped_process(pid, proc->command);
+                }
+            }
+        } else if (strcmp(in, "cont") == 0 || str_starts_with(in, "cont ")) {
+            char *cmd = strtok(in, " ");
+            char *pid_str = strtok(NULL, " ");
+            if (pid_str == NULL) {
+                print_invalid_command(cmd);
+            } else {
+                pid_t pid = atoi(pid_str);
+                process *proc = find_process_by_id(pid);
+                if (proc == NULL) {
+                    print_no_process_found(pid);
+                } else {
+                    kill(pid, SIGCONT);
+                    print_continued_process(pid, proc->command);
+                }
+            }
         } else {
             vector_push_back(hst, in);
             int flag_ = 0;
@@ -457,4 +495,25 @@ char *copy_string(const char *s) {
     char *new_s = malloc(strlen(s) + 1);
     strcpy(new_s, s);
     return new_s;
+}
+
+int str_starts_with(const char *s, const char *prefix) {
+    while (*s == *prefix && *s != '\0') {
+        ++s;
+        ++prefix;
+    }
+
+    return *prefix == '\0';
+}
+
+process *find_process_by_id( pid_t pid) {
+    size_t len = vector_size(Present);
+    for (size_t j = 0; j < len; ++j) {
+        process *p = vector_get(Present, j);
+        if (p->pid == pid) {
+            return p;
+        }
+    }
+
+    return NULL;
 }
