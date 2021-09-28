@@ -2,3 +2,5 @@ cd ..
 ls
 sleep 2
 echo Finished!
+./shell -h test_file.txt
+./shell -h test_file.txt
