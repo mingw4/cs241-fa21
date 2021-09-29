@@ -61,6 +61,6 @@ int par_reduce(int *list, size_t list_len, reducer reduce_func, int base_case,
         free(buffer);
         free(par[l]);
     }
-    int result = reduce(par, num_threads, reduce_func, base_case);
+    int result = reduce(lists, num_threads, reduce_func, base_case);
     return result;
 }
