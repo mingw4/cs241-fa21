@@ -23,9 +23,13 @@ typedef struct structure_t {
 /* You should create a start routine for your threads. */
 void* start_routine(void* par) {
     structure_t *buffer = (structure_t*) par;
-    int *res = malloc(sizeof(int));
-    *res = reduce(buffer->list, buffer->list_len, buffer->reduce_func, buffer->base_case);
-    return (void*) res;
+    int rt = buffer->base_case;
+    for(size_t j = 0; j < buffer->list_len; j++) {
+        rt = buffer->reduce_func(rt, buffer->list[j]);
+    }
+    int *result = malloc(sizeof(int));
+    *result = rt;
+    return (void*) result;
 }
 
 int par_reduce(int *list, size_t list_len, reducer reduce_func, int base_case,
