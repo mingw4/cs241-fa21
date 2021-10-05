@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 /**
  * This queue is implemented with a linked list of queue_nodes.
