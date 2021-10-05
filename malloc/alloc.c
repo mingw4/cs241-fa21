@@ -257,20 +257,20 @@ int get_size(size_t size) {
 
 
 void detach(meta_data* target, int sizeOfList) {
-	meta_data* prev = target->prev_;
-	meta_data* next = target->next_;
-	if (prev == NULL && next == NULL) {
+	meta_data* prev_ = target->prev_;
+	meta_data* next_ = target->next_;
+	if (prev_ == NULL && next_ == NULL) {
 		heads_[sizeOfList] = NULL;
 		tails_[sizeOfList] = NULL;
-	} else if (prev == NULL) {
-		next->prev_ = NULL;
-		heads_[sizeOfList] = next;
-	} else if (next == NULL) {
-		prev->next_ = NULL;
-		tails_[sizeOfList] = prev;
+	} else if (prev_ == NULL) {
+		next_->prev_ = NULL;
+		heads_[sizeOfList] = next_;
+	} else if (next_ == NULL) {
+		prev_->next_ = NULL;
+		tails_[sizeOfList] = prev_;
 	} else {
-		prev->next_ = next;
-		next->prev_ = prev;
+		prev_->next_ = next_;
+		next_->prev_ = prev_;
 	}
 	target->next_ = NULL;
 	target->prev_ = NULL;
@@ -324,7 +324,7 @@ meta_data* get_fit_best(size_t size, int sizeOfList) {
     meta_data* fitter = NULL;
     meta_data* buffer;
     for (buffer = heads_[sizeOfList]; buffer; buffer = buffer->next_) {
-        if (((fitter->size_ > buffer->size_) || (!fitter)) && buffer->size_ >= size) {
+        if ((!fitter || (fitter->size_ > buffer->size_)) && buffer->size_ >= size) {
             fitter = buffer;
         }
     }
