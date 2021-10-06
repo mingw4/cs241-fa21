@@ -6,20 +6,18 @@
 
 // The returns are just for errors if you want to check for them.
 int barrier_destroy(barrier_t *barrier) {
-    int error = 0;
     pthread_cond_destroy(&(barrier->cv));
     pthread_mutex_destroy(&(barrier->mtx));
-    return error;
+    return 0;
 }
 
 int barrier_init(barrier_t *barrier, unsigned int num_threads) {
-    int error = 0;
     barrier->n_threads = num_threads;
     barrier->count = 0;
     barrier->times_used = 1;
-    pthread_cond_init(&(barrier->cv), NULL);
     pthread_mutex_init(&(barrier->mtx), NULL);
-    return error;
+    pthread_cond_init(&(barrier->cv), NULL);
+    return 0;
 }
 
 int barrier_wait(barrier_t *barrier) {
@@ -39,6 +37,7 @@ int barrier_wait(barrier_t *barrier) {
         if (barrier->count == 0) {
             barrier->times_used = 1;
         }
+        pthread_cond_broadcast(&(barrier->cv));
     } else {
         barrier->times_used = 0;
         barrier-> count = barrier->count - 1;
