@@ -44,8 +44,8 @@ queue *queue_create(ssize_t max_size) {
     result->tail = NULL;
     result->size = 0;
     result->max_size = max_size;
-    pthread_cond_destroy(&(result->cv));
-    pthread_mutex_destroy(&(result->m));
+    pthread_cond_init(&(result->cv), NULL);
+    pthread_mutex_init(&(result->m), NULL);
     return result;
 }
 
@@ -74,14 +74,14 @@ void queue_push(queue *this, void *data) {
     queue_node* result = malloc(sizeof(queue_node));
     result->data = data;
     result->next = NULL;
-    if (this->size == 0) {
-        this->head = result;
+    if (this->size != 0) {
+        this->tail->next = result;
         this->tail = result;
         this->size = this->size + 1;
         pthread_cond_broadcast(&(this->cv));
         pthread_mutex_unlock(&(this->m));
     } else {
-        this->tail->next = result;
+        this->head = result;
         this->tail = result;
         this->size = this->size + 1;
         pthread_cond_broadcast(&(this->cv));
