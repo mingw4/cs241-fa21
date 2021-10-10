@@ -217,7 +217,6 @@ void free(void *ptr) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/realloc/
  */
 void *realloc(void *ptr, size_t size) {
-    // implement realloc!
     if (ptr == NULL) {
         return malloc(size);
     }
