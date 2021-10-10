@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 
 typedef struct meta_data {
-    int flag_;
+    bool flag_;
     size_t size_;
     struct meta_data *prev_;
     struct meta_data *next_;
@@ -111,7 +112,7 @@ void *malloc(size_t size) {
         }
         if (block != NULL) {
             detach(block, sizeOfList);
-            block->flag_ = 0;
+            block->flag_ = false;
             split(block, size);
             return (void *)(block + 1);
         }
@@ -156,7 +157,7 @@ void free(void *ptr) {
         sbrk(0 - (sizeof(meta_data) + target->size_));
         return;
     }
-    target->flag_ = 1;
+    target->flag_ = true;
     if (target == NULL) {
         return;
     }
@@ -277,7 +278,7 @@ void detach(meta_data* target, int sizeOfList) {
 
 void merge_next(meta_data* target) {
     meta_data* next__block = (void*)(target + 1) + target->size_;
-    if ((void*) next__block < sbrk(0) && next__block->flag_ == 1) {
+    if ((void*) next__block < sbrk(0) && next__block->flag_ == true) {
         detach(next__block, get_size(next__block->size_));
         target->size_ = target->size_ + sizeof(meta_data) + next__block->size_;
     }
@@ -290,7 +291,7 @@ void split(meta_data* to_split, size_t new_size_) {
     if ((4 + new_size_ + sizeof(meta_data) < to_split->size_)) {
         meta_data* target = (void *)(to_split + 1) + new_size_;
         target->size_ = to_split->size_ - sizeof(meta_data) - new_size_;
-        target->flag_ = 1;
+        target->flag_ = true;
         if (target == NULL) {
             return;
         }
@@ -333,7 +334,7 @@ meta_data* get_fit_best(size_t size, int sizeOfList) {
 void defrag(int sizeOfList) {
     meta_data *buffer = heads_[sizeOfList];
     while (buffer != NULL) {
-        if (buffer->flag_ == 1) {
+        if (buffer->flag_ == true) {
             merge_next(buffer);
         }
         if (sbrk(0) <= ((void*) ((char*) buffer + sizeof(meta_data) + buffer->size_))) {
