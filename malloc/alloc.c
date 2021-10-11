@@ -95,8 +95,8 @@ void *malloc(size_t size) {
     }
     int sizeOfList = get_size(size);
     if (sizeOfList == 14) {
-        ++dfg_num_;
-        if (6 < dfg_num_) {
+        dfg_num_= dfg_num_ + 1;
+        if (dfg_num_ > 6) {
             defrag(sizeOfList);
             dfg_num_ = 0;
         }
@@ -105,7 +105,7 @@ void *malloc(size_t size) {
     } 
     meta_data *block = NULL;
     if (heads_[sizeOfList] != NULL) {
-        if (4 < get_size(size)) {
+        if (5 <= get_size(size)) {
             block = get_fit_best(size, sizeOfList);
         } else {
             block = get_fit_first(size, sizeOfList);
@@ -121,7 +121,7 @@ void *malloc(size_t size) {
     if (block == (void*) -1) {
         block = NULL;
     }
-    *block = (meta_data){false, size, NULL, NULL};
+    *block = (meta_data){0, size, NULL, NULL};
     if (block == NULL) {
         return NULL;
     }
@@ -153,7 +153,7 @@ void free(void *ptr) {
         return;
     }
     merge_next(target);
-    if (sbrk(0) <= (ptr + target->size_) && 4 < get_size(target->size_)) {
+    if (sbrk(0) <= (ptr + target->size_) && get_size(target->size_) >= 5) {
         sbrk(0 - (sizeof(meta_data) + target->size_));
         return;
     }
@@ -277,10 +277,10 @@ void detach(meta_data* target, int sizeOfList) {
 }
 
 void merge_next(meta_data* target) {
-    meta_data* nxt = (void*)(target + 1) + target->size_;
-    if ((void*) nxt < sbrk(0) && nxt->flag_ == true) {
-        detach(nxt, get_size(nxt->size_));
-        target->size_ = target->size_ + sizeof(meta_data) + nxt->size_;
+    meta_data* next__block = (void*)(target + 1) + target->size_;
+    if ((void*) next__block < sbrk(0) && next__block->flag_ == true) {
+        detach(next__block, get_size(next__block->size_));
+        target->size_ = target->size_ + sizeof(meta_data) + next__block->size_;
     }
 }
 
@@ -345,4 +345,3 @@ void defrag(int sizeOfList) {
         buffer = buffer->next_;
     }
 }
-
