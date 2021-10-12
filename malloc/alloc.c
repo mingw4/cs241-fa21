@@ -144,7 +144,7 @@ void *malloc(size_t size) {
  *    passed as argument, no action occurs.
  */
 void free(void *ptr) {
-    if (ptr == NULL || ptr >= sbrk(0)) {
+    if (ptr == NULL || sbrk(0) <= ptr) {
         return;
     }
     meta_data* target = (meta_data*)ptr - 1;
@@ -225,7 +225,7 @@ void *realloc(void *ptr, size_t size) {
         return NULL;
     }
     meta_data* reallocor = (void *)ptr - sizeof(meta_data);
-    if (reallocor->size_ < size) {
+    if (size > reallocor->size_) {
         merge_next(reallocor);
         if (reallocor->size_ >= size) {
             return ptr;
@@ -258,7 +258,7 @@ int get_size(size_t size) {
 void detach(meta_data* target, int sizeOfList) {
 	meta_data* prev_ = target->prev_;
 	meta_data* next_ = target->next_;
-	if (next_ == NULL && prev_ == NULL) {
+	if (prev_ == NULL && next_ == NULL) {
 		heads_[sizeOfList] = NULL;
 		tails_[sizeOfList] = NULL;
 	} else if (prev_ == NULL) {
@@ -311,7 +311,7 @@ void split(meta_data* to_split, size_t new_size_) {
 meta_data* get_fit_first(size_t size, int sizeOfList) {
     meta_data* buffer = heads_[sizeOfList];
     while (buffer != NULL) {
-        if (buffer->size_ >= size) {
+        if (size <= buffer->size_) {
             return buffer;
         }
         buffer = buffer->next_;
