@@ -105,7 +105,7 @@ void *malloc(size_t size) {
     } 
     meta_data *block = NULL;
     if (heads_[sizeOfList] != NULL) {
-        if (size > 1024) {
+        if (size >= 256) {
             block = get_fit_best(size, sizeOfList);
         } else {
             block = get_fit_first(size, sizeOfList);
@@ -149,11 +149,11 @@ void free(void *ptr) {
         return;
     }
     meta_data* target = (meta_data*)ptr - 1;
-    if (target->flag_ == 1) {
+    if (target->flag_ == true) {
         return;
     }
     merge_next(target);
-    if (sbrk(0) <= (ptr + target->size_) && get_size(target->size_) >= 5) {
+    if (sbrk(0) <= (ptr + target->size_) && target->size_ >= 256) {
         sbrk(0 - (sizeof(meta_data) + target->size_));
         return;
     }
