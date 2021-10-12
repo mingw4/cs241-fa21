@@ -59,7 +59,6 @@ void detach(meta_data*, int);
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/calloc/
  */
 void *calloc(size_t num, size_t size) {
-    // implement calloc!
     void *buffer = malloc(size * num);
     if (buffer == NULL) {
         return NULL;
@@ -247,7 +246,7 @@ void *realloc(void *ptr, size_t size) {
 //Helper Functions.
 
 int get_size(size_t size) {
-    for (size_t j = 0; j < 15; j++) {
+    for (size_t j = 0; j < 15; ++j) {
         if (size_list_[j] >= size) {
             return j;
         }
@@ -288,7 +287,7 @@ void split(meta_data* to_split, size_t new_size_) {
     if (to_split == NULL) {
         return;
     }
-    if ((4 + new_size_ + sizeof(meta_data) < to_split->size_)) {
+    if (to_split->size_ >= (2 * new_size_) && (to_split->size_ - new_size_) > 1023) {
         meta_data* target = (void *)(to_split + 1) + new_size_;
         target->size_ = to_split->size_ - sizeof(meta_data) - new_size_;
         target->flag_ = true;
