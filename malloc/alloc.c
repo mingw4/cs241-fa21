@@ -60,11 +60,11 @@ void detach(meta_data*, int);
  */
 void *calloc(size_t num, size_t size) {
     // implement calloc!
-    void *buffer = malloc(num * size);
+    void *buffer = malloc(size * num);
     if (buffer == NULL) {
         return NULL;
     }
-    memset(buffer, 0, num * size);
+    memset(buffer, 0, size * num);
     return buffer;
 }
 
@@ -94,18 +94,18 @@ void *malloc(size_t size) {
         return NULL;
     }
     int sizeOfList = get_size(size);
-    if (sizeOfList == 14) {
+    if (size > 65536) {
+        defrag(sizeOfList);
+    } else if (size > 32768) {
         dfg_num_= dfg_num_ + 1;
         if (dfg_num_ > 6) {
             defrag(sizeOfList);
             dfg_num_ = 0;
         }
-    } else if (sizeOfList == 15) {
-        defrag(sizeOfList);
-    } 
+    }  
     meta_data *block = NULL;
     if (heads_[sizeOfList] != NULL) {
-        if (size >= 256) {
+        if (size > 128) {
             block = get_fit_best(size, sizeOfList);
         } else {
             block = get_fit_first(size, sizeOfList);
