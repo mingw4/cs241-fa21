@@ -311,7 +311,7 @@ void split(meta_data* to_split, size_t new_size_) {
 meta_data* get_fit_first(size_t size, int sizeOfList) {
     meta_data* buffer = heads_[sizeOfList];
     while (buffer != NULL) {
-        if (size <= buffer->size_) {
+        if (buffer->size_ >= size) {
             return buffer;
         }
         buffer = buffer->next_;
