@@ -18,7 +18,7 @@ typedef struct meta_data {
 
 static meta_data* heads_[16];
 static meta_data* tails_[16];
-static size_t size_list_[] = {64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072};
+static size_t size_list_[] = {8, 16, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072};
 static int dfg_num_ = 0;
 
 
@@ -94,18 +94,19 @@ void *malloc(size_t size) {
         return NULL;
     }
     int sizeOfList = get_size(size);
-    if (sizeOfList == 11) {
+    if (15 == sizeOfList) {
+        defrag(sizeOfList);
+    } else if (14 == sizeOfList) {
         dfg_num_= dfg_num_ + 1;
         if (dfg_num_ > 6) {
             defrag(sizeOfList);
             dfg_num_ = 0;
         }
-    } else if (sizeOfList == 12) {
-        defrag(sizeOfList);
-    } 
+    }
+    
     meta_data *block = NULL;
     if (heads_[sizeOfList] != NULL) {
-        if (2 <= get_size(size)) {
+        if (6 <= get_size(size)) {
             block = get_fit_best(size, sizeOfList);
         } else {
             block = get_fit_first(size, sizeOfList);
@@ -247,12 +248,12 @@ void *realloc(void *ptr, size_t size) {
 //Helper Functions.
 
 int get_size(size_t size) {
-    for (size_t j = 0; j < 12; j++) {
+    for (size_t j = 0; j < 15; j++) {
         if (size_list_[j] >= size) {
             return j;
         }
     }
-    return 12;
+    return 15;
 }
 
 
