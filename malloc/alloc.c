@@ -287,7 +287,7 @@ void split(meta_data* to_split, size_t new_size_) {
     if (to_split == NULL) {
         return;
     }
-    if (to_split->size_ >= (2 * new_size_) && (to_split->size_ - new_size_) > 1023) {
+    if (to_split->size_ > (2 * new_size_) && (to_split->size_ - new_size_) > 1023) {
         meta_data* target = (void *)(to_split + 1) + new_size_;
         target->size_ = to_split->size_ - sizeof(meta_data) - new_size_;
         target->flag_ = true;
