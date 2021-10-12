@@ -94,18 +94,18 @@ void *malloc(size_t size) {
         return NULL;
     }
     int sizeOfList = get_size(size);
-    if (size > 65536) {
-        defrag(sizeOfList);
-    } else if (size > 32768) {
+    if (14 == sizeOfList) {
         dfg_num_= dfg_num_ + 1;
-        if (dfg_num_ > 6) {
+        if (6 < dfg_num_) {
             defrag(sizeOfList);
             dfg_num_ = 0;
         }
-    }  
+    } else if (15 == sizeOfList) {
+        defrag(sizeOfList);
+    } 
     meta_data *block = NULL;
     if (heads_[sizeOfList] != NULL) {
-        if (size > 128) {
+        if (size > 256) {
             block = get_fit_best(size, sizeOfList);
         } else {
             block = get_fit_first(size, sizeOfList);
