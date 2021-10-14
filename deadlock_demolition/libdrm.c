@@ -1,5 +1,5 @@
+//partners: shunl2; mingw4
 
-  
 /**
  * deadlock_demolition
  * CS 241 - Fall 2021
