@@ -28,11 +28,11 @@ typedef struct _task_t_ {
 
 } _task_t_;
 
-void delete__task_t_(_task_t_ *t) {
-    free(t->abst_);
-    free(t->fx_);
-    free(t->usr_);    
-    free(t);
+void delete__task_t_(_task_t_ *result) {
+    free(result->abst_);
+    free(result->fx_);
+    free(result->usr_);    
+    free(result);
 }
 
 char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *times) {
