@@ -28,8 +28,7 @@ typedef struct _task_t_ {
 
 } _task_t_;
 
-void delete__task_t_(_task_t_ *t) 
-{
+void delete__task_t_(_task_t_ *t) {
     free(t->abst_);
     free(t->fx_);
     free(t->usr_);    
@@ -72,13 +71,11 @@ char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *hash_co
     return NULL;
 }
 
-void *initializer(void *arg)
-{
+void *initializer(void *arg) {
     para_t *paras = (para_t*) arg;
     int code = paras->code;
     queue *q = paras->queue_;
     unsigned num = 0;
-    
     while (1) {
         _task_t_* result = (_task_t_*)queue_pull(q);
         if (result == NULL) {
