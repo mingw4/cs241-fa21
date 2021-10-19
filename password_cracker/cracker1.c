@@ -13,18 +13,18 @@
 
 typedef struct para_t {
     unsigned code;
-    unsigned    success_time;
-    unsigned    failure_time;
+    unsigned success_time;
+    unsigned failure_time;
     queue* queue_;
 } para_t;
 
 typedef struct _task_t_ {
     char *usr_;
-    unsigned  len_pwd_;
-    unsigned  len_to_solve_;
+    unsigned len_pwd_;
+    unsigned len_to_solve_;
     char *abst_;
     char *fx_;
-    unsigned  len_fx_;
+    unsigned len_fx_;
 
 } _task_t_;
 
@@ -34,8 +34,6 @@ void delete__task_t_(_task_t_ *t) {
     free(t->usr_);    
     free(t);
 }
-
-
 
 char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *hash_count) {
     char *trys = malloc(sizeof(char) * (curr_task->len_pwd_ + 1));

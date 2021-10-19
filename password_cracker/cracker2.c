@@ -11,10 +11,15 @@
 #include "includes/queue.h"
 
 
+pthread_rwlock_t lock;
+int flag_ = 0;
+pthread_mutex_t mutex;
+pthread_barrier_t barrier;
+
 typedef struct para_t {
     unsigned code;
-    unsigned    success_time;
-    unsigned    failure_time;
+    unsigned success_time;
+    unsigned failure_time;
     queue* queue_;
 } para_t;
 
@@ -34,8 +39,6 @@ void delete__task_t_(_task_t_ *t) {
     free(t->usr_);    
     free(t);
 }
-
-
 
 char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *hash_count) {
     char *trys = malloc(sizeof(char) * (curr_task->len_pwd_ + 1));
