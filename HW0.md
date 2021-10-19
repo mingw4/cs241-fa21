@@ -1,13 +1,11 @@
 CH1
 
 Q1.
-
 #include <unistd.h>
 int main() {
 	write(1, "Hi! My name is Ming Wang", 24);
 	return 0;
 }
-
 
 
 Q2.
