@@ -40,7 +40,7 @@ void delete__task_t_(_task_t_ *t) {
     free(t);
 }
 
-char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *hash_count) {
+char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *times) {
     char *trys = malloc(sizeof(char) * (curr_task->len_pwd_ + 1));
     long begin;
     long num_trys;
@@ -63,13 +63,13 @@ char *cracker(_task_t_ *curr_task, int code, int thread_count, unsigned *hash_co
             char *result = malloc(sizeof(char) * (curr_task->len_pwd_ + 1));
             memset(result, 0, curr_task->len_pwd_+1);
             memcpy(result, trys, curr_task->len_pwd_);
-            *hash_count = j + 1; 
+            *times = j + 1; 
             free(trys);
             return result;
         }
     }
 
-    *hash_count = num_trys;
+    *times = num_trys;
     free(trys);
     return NULL;
 }
