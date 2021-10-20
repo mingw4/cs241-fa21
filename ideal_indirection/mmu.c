@@ -21,6 +21,22 @@ void mmu_read_from_virtual_address(mmu *this, addr32 virtual_address,
     assert(pid < MAX_PROCESS_ID);
     assert(num_bytes + (virtual_address % PAGE_SIZE) <= PAGE_SIZE);
     // TODO: Implement me!
+    if (this->curr_pid != pid) {
+        tlb_flush(&(this->tlb));
+        this->curr_pid = pid;
+    }
+    if (address_in_segmentations(this->segmentations[pid], virtual_address) == false) {
+        mmu_raise_segmentation_fault(this);
+        return;
+    }
+    if ((find_segment(this->segmentations[pid], virtual_address))->permissions & READ == false) {
+        mmu_raise_segmentation_fault(this);
+        return;
+    }
+    if (!tlb_get_pte(&this->tlb, virtual_address & 0xFFFFF000)) {
+        mmu_tlb_miss(this);
+        page_directory_entry *pde = &(this->page_directories[pid])->entries[(virtual_address) >> (VIRTUAL_ADDR_SPACE - NUM_OFFSET_BITS)];
+    }
 }
 
 void mmu_write_to_virtual_address(mmu *this, addr32 virtual_address, size_t pid,
