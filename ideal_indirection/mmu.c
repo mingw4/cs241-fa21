@@ -4,7 +4,7 @@
  */
 
 
-//Partner: mingw4, shunl2, zhichao8
+//Partner: mingw4, shunl2, zhichao8, qz13
 #include "mmu.h"
 #include <assert.h>
 #include <dirent.h>
