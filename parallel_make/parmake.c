@@ -142,6 +142,6 @@ int parmake(char *makefile, size_t num_threads, char **targets) {
     pthread_cond_destroy(&p_cond_);
     graph_destroy(graph_);
     vector_destroy(aims_);
-
+    set_destroy(iterated_);
     return 0;
 }
