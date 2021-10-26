@@ -123,7 +123,7 @@ int parmake(char *makefile, size_t num_threads, char **targets) {
     }
     pthread_cond_init(&p_cond_, NULL);
     pthread_mutex_init(&p_mutex_, NULL);
-    graph* graph_ = parser_parse_makefile(makefile, targets);
+    graph_ = parser_parse_makefile(makefile, targets);
     vector *aims_ = graph_neighbors(graph_, "");
     for (size_t j = 0; j < vector_size(aims_); j++) {
         if (recur_cycle_detector(vector_get(aims_, j)) == 0) {
