@@ -1,3 +1,4 @@
+
 #include "utils.h"
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -5,16 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 //Partner: mingw4, shunl2, zhichao8, qz13
-
-#include "utils.h"
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 
 int main(int argc, char **argv) {
