@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//Partner: mingw4, shunl2, zhichao8, qz13
+//Partner: mingw4, shunl2, qz13, yuhanlu2
 
 
 int main(int argc, char **argv) {
