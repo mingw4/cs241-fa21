@@ -148,4 +148,53 @@ void rule_finder(vector *result, vector *targets, dictionary *dict_count) {
     }
 }
 
+int start_flag_(void *t_) {
+    rule_t *r_ = (rule_t *)graph_get_vertex_value(graph_, t_);
+    if (r_->state != 0) {
+        return 3;
+    }
+    vector *t_sub_vec = graph_neighbors(graph_, t_);
+    size_t num_t_sub_vec = vector_size(t_sub_vec);
+    if (0 >= num_t_sub_vec) {
+        vector_destroy(t_sub_vec);
+        return access(t_, F_OK) != -1 ? 2 : 1;
+    } else {
+        if (access(t_, F_OK) != -1) {
+            for (size_t j = 0; j < num_t_sub_vec; ++j) {
+                char *sub_target = vector_get(t_sub_vec, j);
+                if (-1 == access(sub_target, F_OK)) {
+                    vector_destroy(t_sub_vec);
+                    return 1;
+                } else {
+                    struct stat stat_0, stat_1;
+	                if ((-1 == stat(sub_target, &stat_1) == -1) || (-1 == stat((char *)t_, &stat_0))) {
+                                vector_destroy(t_sub_vec);
+                                return -1;
+                    }   
+	                if (0 > difftime(stat_0.st_mtime, stat_1.st_mtime)) {
+                        vector_destroy(t_sub_vec);
+                        return 1;
+                    }
+                }
+            }
+            vector_destroy(t_sub_vec);
+            return 2;
+        } else {
+            // check if all sub-r_vec_ succeed
+            pthread_mutex_lock(&g_lock_);
+            for (size_t j = 0; j < num_t_sub_vec; ++j) {
+                rule_t *sub_rule = graph_get_vertex_value(graph_, vector_get(t_sub_vec, j));
+                int state = sub_rule->state;
+                if (state != 1) {
+                    pthread_mutex_unlock(&g_lock_);
+                    vector_destroy(t_sub_vec);
+                    return state;
+                }
+            }
+            pthread_mutex_unlock(&g_lock_);
+            vector_destroy(t_sub_vec);
+            return 1;
+        }
+    }
+}
 
