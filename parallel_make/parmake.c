@@ -20,6 +20,7 @@
 
 //helper functions
 void* routine_(void *);
+void rule_finder(vector*, vector*, dictionary*);
 int recurr_cycle_num_finder(dictionary *, void *);
 int recurr_cycle_num_finder(dictionary *, void *);
 
@@ -167,7 +168,7 @@ int start_flag_(void *t_) {
                     return 1;
                 } else {
                     struct stat stat_0, stat_1;
-	                if ((-1 == stat(sub_target, &stat_1) == -1) || (-1 == stat((char *)t_, &stat_0))) {
+	                if ((-1 == stat(sub_target, &stat_1)) || (-1 == stat((char *)t_, &stat_0))) {
                                 vector_destroy(t_sub_vec);
                                 return -1;
                     }   
@@ -180,7 +181,6 @@ int start_flag_(void *t_) {
             vector_destroy(t_sub_vec);
             return 2;
         } else {
-            // check if all sub-r_vec_ succeed
             pthread_mutex_lock(&g_lock_);
             for (size_t j = 0; j < num_t_sub_vec; ++j) {
                 rule_t *sub_rule = graph_get_vertex_value(graph_, vector_get(t_sub_vec, j));
@@ -197,4 +197,58 @@ int start_flag_(void *t_) {
         }
     }
 }
+
+void *routine_(void *data) {
+    (void) data;
+    while (true) {
+        pthread_mutex_lock(&r_lock_);
+        size_t num_rules = vector_size(r_vec_);
+        if (0 >= num_rules) {
+            pthread_mutex_unlock(&r_lock_);
+            return NULL;
+        } else {
+            for (size_t j = 0; j < num_rules; ++j) {
+                void *t_ = vector_get(r_vec_, j);
+                int status = start_flag_(t_);
+                rule_t *rule = graph_get_vertex_value(graph_, t_);
+                if (3 == status) {
+                    vector_erase(r_vec_, j);
+                    pthread_mutex_unlock(&r_lock_);
+                    break;
+                } else if ((-1 == status) || (2 == status)) {
+                    vector_erase(r_vec_, j);
+                    pthread_mutex_unlock(&r_lock_);
+                    pthread_mutex_lock(&g_lock_);
+                    rule->state = status == -1 ? -1 : 1;
+                    pthread_cond_broadcast(&r_cond_);
+                    pthread_mutex_unlock(&g_lock_);
+                    break;
+                } else if (1 == status) {
+                    vector_erase(r_vec_, j);
+                    pthread_mutex_unlock(&r_lock_);
+                    vector *commands = rule->commands;
+                    size_t comm_num = vector_size(commands);
+                    int sstate = 1;
+                    for (size_t j = 0; j < comm_num; ++j) {
+                        if (system((char *)vector_get(commands, j)) != 0) {
+                            sstate = -1;
+                            break;
+	                    }
+                    }
+                    pthread_mutex_lock(&g_lock_);
+                    rule->state = sstate;
+                    pthread_cond_broadcast(&r_cond_);
+                    pthread_mutex_unlock(&g_lock_);
+                    break;
+                } else if ((num_rules - 1) == j) {
+                    pthread_cond_wait(&r_cond_, &r_lock_);
+                    pthread_mutex_unlock(&r_lock_);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
 
