@@ -19,13 +19,13 @@
 #include "includes/queue.h"
 
 //helper functions
-void *routine_(void*);
-int recurr_cycle_num_finder(dictionary*, void*);
-int recurr_cycle_num_finder(dictionary*, void*);
+void* routine_(void *);
+int recurr_cycle_num_finder(dictionary *, void *);
+int recurr_cycle_num_finder(dictionary *, void *);
 
 //helper structures
-graph *graph_ = NULL;
-vector *r_vec_ = NULL;
+graph* graph_ = NULL;
+vector* r_vec_ = NULL;
 
 //pthread stuff
 pthread_cond_t g_cond_ = PTHREAD_COND_INITIALIZER;
@@ -90,12 +90,10 @@ int parmake(char *makefile, size_t num_threads, char **targets) {
         dictionary_destroy(dict_count);
         pthread_t threads[num_threads]; 
         for (size_t j = 0; j < num_threads; ++j) {
-            // failed to create new process
             if (pthread_create(&threads[j], NULL, routine_, NULL) != 0)
                 exit(1);
         }
         for (size_t j = 0; j < num_threads; ++j) {
-            // failed to join process
             if (pthread_join(threads[j], NULL) != 0)
                 exit(1);
         }
@@ -117,7 +115,6 @@ int recurr_cycle_num_finder(dictionary *d_hist, void *t_) {
     } else {
             int *val_ = dictionary_get(d_hist, t_);
         *val_ = 1;
-        // check all of its descendants
         vector *neighbors = graph_neighbors(graph_, t_);
         size_t num_neighbors = vector_size(neighbors);
         for (size_t i = 0; i < num_neighbors; ++i) {
@@ -126,7 +123,6 @@ int recurr_cycle_num_finder(dictionary *d_hist, void *t_) {
                 return 1;
             }
         }
-        // set val_ to "finished"
         val_ = dictionary_get(d_hist, t_);
         *val_ = 2;
         vector_destroy(neighbors);
