@@ -2,12 +2,15 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
+//Partner: shunl2, mingw4
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "utils.h"
+#include <errno.h>
 static const size_t MESSAGE_SIZE_DIGITS = 4;
 
 char *create_message(char *name, char *message) {
@@ -32,15 +35,32 @@ ssize_t get_message_size(int socket) {
 // You may assume size won't be larger than a 4 byte integer
 ssize_t write_message_size(size_t size, int socket) {
     // Your code here
-    return 9001;
+    size_t att = htonl(size);
+    return write_all_to_socket(socket, (char*)&att, MESSAGE_SIZE_DIGITS);
 }
 
 ssize_t read_all_from_socket(int socket, char *buffer, size_t count) {
     // Your Code Here
-    return 9001;
+    size_t return_code = 0;
+    for (;return_code < count; return_code++) {
+      ssize_t socket_ = read(socket, buffer + return_code, count - return_code);
+      if (socket_ == 0) return 0;
+      if (errno == EINTR && socket_ == -1)continue;
+      if (socket_ == -1) return -1;
+      return_code += socket_;
+    }
+    return return_code;
 }
 
 ssize_t write_all_to_socket(int socket, const char *buffer, size_t count) {
     // Your Code Here
-    return 9001;
+    size_t return_code = 0;
+    for (;return_code < count; return_code++) {
+      ssize_t socket_ = write(socket, buffer + return_code, count - return_code);
+      if (socket_ == 0) return 0;
+      if (errno == EINTR && socket_ == -1)continue;
+      if (socket_ == -1) return -1;
+      return_code += socket_;
+    }
+    return return_code;
 }

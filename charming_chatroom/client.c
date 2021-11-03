@@ -2,7 +2,7 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
-
+//Partner: shunl2, mingw4
 #include <errno.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -10,9 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
 #include "chat_window.h"
 #include "utils.h"
@@ -30,6 +30,8 @@ void close_program(int signal);
  */
 void close_server_connection() {
     // Your code here
+    shutdown(serverSocket, SHUT_RDWR);
+    close(serverSocket);
 }
 
 /**
@@ -42,17 +44,25 @@ void close_server_connection() {
  * Returns integer of valid file descriptor, or exit(1) on failure.
  */
 int connect_to_server(const char *host, const char *port) {
-    /*QUESTION 1*/
-    /*QUESTION 2*/
-    /*QUESTION 3*/
-
-    /*QUESTION 4*/
-    /*QUESTION 5*/
-
-    /*QUESTION 6*/
-
-    /*QUESTION 7*/
-    return -1;
+    struct addrinfo input, *output;
+    memset(&input, 0, sizeof(input));
+    input.ai_family = AF_INET;
+    input.ai_socktype = SOCK_STREAM;
+    int att = getaddrinfo(host, port, &input, &output);
+    if (att!= 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(att));
+        freeaddrinfo(output);
+        exit(1);
+    }
+    int toreturn = socket(AF_INET, SOCK_STREAM, 0);
+    int sucuess = connect(toreturn, output->ai_addr, output->ai_addrlen);
+    if (sucuess == -1) {
+        perror(NULL);
+        freeaddrinfo(output);
+        exit(1);
+    }
+    freeaddrinfo(output);
+    return toreturn;
 }
 
 typedef struct _thread_cancel_args {
