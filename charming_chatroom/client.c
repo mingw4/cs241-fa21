@@ -2,7 +2,7 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
-
+//Partner: mingw4, shunl2, qz13
 #include <errno.h>
 #include <netdb.h>
 #include <pthread.h>
