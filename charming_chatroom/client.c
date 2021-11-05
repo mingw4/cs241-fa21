@@ -2,7 +2,7 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
-//Partner: shunl2, mingw4
+
 #include <errno.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -44,6 +44,11 @@ void close_server_connection() {
  * Returns integer of valid file descriptor, or exit(1) on failure.
  */
 int connect_to_server(const char *host, const char *port) {
+    int toreturn = socket(AF_INET, SOCK_STREAM, 0);
+    if (toreturn == -1) {
+        fprintf(stderr, "ERROR: failed to create client socket\n");
+        exit(1);
+    }
     struct addrinfo input, *output;
     memset(&input, 0, sizeof(input));
     input.ai_family = AF_INET;
@@ -51,14 +56,12 @@ int connect_to_server(const char *host, const char *port) {
     int att = getaddrinfo(host, port, &input, &output);
     if (att!= 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(att));
-        freeaddrinfo(output);
         exit(1);
     }
-    int toreturn = socket(AF_INET, SOCK_STREAM, 0);
+
     int sucuess = connect(toreturn, output->ai_addr, output->ai_addrlen);
     if (sucuess == -1) {
         perror(NULL);
-        freeaddrinfo(output);
         exit(1);
     }
     freeaddrinfo(output);

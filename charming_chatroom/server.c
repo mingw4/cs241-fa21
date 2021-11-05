@@ -2,7 +2,6 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
-//Partner: shunl2, mingw4
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
@@ -80,7 +79,8 @@ void run_server(char *port) {
     /* set up variables */
     pthread_t tids[MAX_CLIENTS];
     int temp = socket(AF_INET, SOCK_STREAM, 0);
-    if (temp == -1) {
+    int aa = setsockopt(temp, SOL_SOCKET,  SO_REUSEADDR, &(int){1}, sizeof(int));
+    if (aa != 0 ) {
         perror(NULL);
         exit(1);
     }
@@ -90,27 +90,19 @@ void run_server(char *port) {
     input.ai_family = AF_INET;
     input.ai_socktype = SOCK_STREAM; 
     input.ai_flags = AI_PASSIVE;  
-    int aa = setsockopt(temp, SOL_SOCKET,  SO_REUSEADDR, &(int){1}, sizeof(int));
-    if (aa != 0 ) {
-        perror(NULL);
-        exit(1);
-    }
     int bb = getaddrinfo(NULL, port, &input, &output);
     if (bb != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(bb));
-        freeaddrinfo(output);
         exit(1);
     }
     int cc = bind(temp, output->ai_addr, output->ai_addrlen);
     if (cc == -1) {
-  		perror(NULL);
-        freeaddrinfo(output);
+        perror("bind()");
         exit(1);
   	}
     int dd = listen(temp, MAX_CLIENTS);
     if (dd == -1) { 
-  		perror(NULL);
-        freeaddrinfo(output);
+        perror("listen()");
         exit(1);
   	}
     for (size_t i = 0; i < MAX_CLIENTS; i++) {
@@ -119,28 +111,27 @@ void run_server(char *port) {
     serverSocket = temp;
     freeaddrinfo(output);
     while (!endSession) {
-        printf("Waiting for connection...\n");
         // lock the shutdown
+        int find_clinet = accept(serverSocket, NULL, NULL);
         pthread_mutex_lock(&mutex);
-        if (clientsCount >= MAX_CLIENTS) {
-            fprintf(stderr, "No more clients allowed\n");
-            pthread_mutex_unlock(&mutex);
-            continue;
-        }
-        int find_clinet = accept(temp, NULL, NULL);
-    	if (find_clinet < 0) {
+        if (find_clinet < 0) {
     	    perror(NULL);
     	    exit(1);
     	}
-        printf("Connection made: client_fd=%d\n", find_clinet);
-        for (size_t userID = 0; userID < MAX_CLIENTS; userID++) {
-            if (clients[userID] == -1) {
-                clients[userID] = find_clinet;
-                ++clientsCount;
-                pthread_create(tids + userID, NULL, process_client, (void*)(intptr_t)userID);
+        if (clientsCount > MAX_CLIENTS) {
+            close(find_clinet);
+            pthread_mutex_unlock(&mutex);
+            continue;
+        }
+        size_t aa = 0;
+        for (size_t UserID = 0; UserID < MAX_CLIENTS; UserID++) {
+            if (clients[UserID] == -1) {
+                clients[UserID] = find_clinet;
+                aa = UserID;
                 break;
             }
         }
+        pthread_create(tids+aa, NULL, process_client, (void*)aa);
         pthread_mutex_unlock(&mutex);
     }
 }

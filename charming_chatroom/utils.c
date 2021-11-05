@@ -2,7 +2,6 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
-//Partner: shunl2, mingw4
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,12 +41,12 @@ ssize_t write_message_size(size_t size, int socket) {
 ssize_t read_all_from_socket(int socket, char *buffer, size_t count) {
     // Your Code Here
     size_t return_code = 0;
-    for (;return_code < count; return_code++) {
+    while (return_code < count) {
       ssize_t socket_ = read(socket, buffer + return_code, count - return_code);
       if (socket_ == 0) return 0;
       if (errno == EINTR && socket_ == -1)continue;
       if (socket_ == -1) return -1;
-      return_code += socket_;
+      return_code = return_code + socket_;
     }
     return return_code;
 }
@@ -55,12 +54,12 @@ ssize_t read_all_from_socket(int socket, char *buffer, size_t count) {
 ssize_t write_all_to_socket(int socket, const char *buffer, size_t count) {
     // Your Code Here
     size_t return_code = 0;
-    for (;return_code < count; return_code++) {
+    while (return_code < count) {
       ssize_t socket_ = write(socket, buffer + return_code, count - return_code);
       if (socket_ == 0) return 0;
       if (errno == EINTR && socket_ == -1)continue;
       if (socket_ == -1) return -1;
-      return_code += socket_;
+      return_code = return_code + socket_;
     }
     return return_code;
 }
