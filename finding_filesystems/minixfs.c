@@ -12,6 +12,7 @@
  * Virtual paths:
  *  Add your new virtual endpoint to minixfs_virtual_path_names
  */
+//Good
 char *minixfs_virtual_path_names[] = {"info", /* add your paths here*/};
 
 /**
