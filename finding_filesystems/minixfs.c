@@ -63,21 +63,23 @@ int minixfs_chmod(file_system *fs, char *path, int new_permissions) {
     return -1;
 }
 
+// fail when passing -1 for the uid and gid
 int minixfs_chown(file_system *fs, char *path, uid_t owner, gid_t group) {
     // Land ahoy!
+    if (-1 == access(path, F_OK)) {
+        errno = ENOENT;
+        return -1;
+    }
     inode* x = get_inode(fs, path);
-    if (x) {
-        if (owner != (x->uid - 1)) {
+    if (x != NULL) {
+        if (owner != (uid_t) -1) {
             x->uid = owner;
         }
-        if (group != (x->gid - 1)) {
+        if (group != (gid_t) -1) {
             x->gid = group;
         }
         clock_gettime(CLOCK_REALTIME, &x->ctim);
         return 0;
-    }
-    if (-1 == access(path, F_OK)) {
-        errno = ENOENT;
     }
     return -1;
 }
@@ -133,6 +135,11 @@ ssize_t minixfs_virtual_read(file_system *fs, const char *path, void *buf,
         *off = *off + count;
         return count;
     }
+    inode* x = get_inode(fs, path);
+    if (x == NULL) {
+        errno = ENOENT;
+        return -1;
+    }
 
     errno = ENOENT;
     return -1;
@@ -140,77 +147,84 @@ ssize_t minixfs_virtual_read(file_system *fs, const char *path, void *buf,
 
 ssize_t minixfs_write(file_system *fs, const char *path, const void *buf,
                       size_t count, off_t *off) {
-    // X marks the spot
-    if ((NUM_INDIRECT_BLOCKS + NUM_DIRECT_BLOCKS) * sizeof(data_block) < count + *off) {
-        errno = ENOSPC;
-        return -1;
-    }
-    inode* x = get_inode(fs, path);
-    if(!x) {
+    inode *x = get_inode(fs, path);
+    if (x == NULL) {
         x = minixfs_create_inode_for_path(fs, path);
+        if (x == NULL) {
+            errno = ENOSPC;
+            return -1;
+        }
     }
-    if (-1 == minixfs_min_blockcount(fs, path, (count + *off) / sizeof(data_block) + 1)) {
+    size_t i = (*off + count) / sizeof(data_block);
+    if ((*off + count) % sizeof(data_block) != 0) {
+        ++i;
+    }
+    if (minixfs_min_blockcount(fs, path, (int)i) == -1) {
         errno = ENOSPC;
         return -1;
     }
-    int j = *off / sizeof(data_block);
-    int k = *off % sizeof(data_block);
-    data_block_number l;
+                size_t k = *off % sizeof(data_block);
+    off_t l = *off + count;
+    size_t j = *off / sizeof(data_block);
+
     size_t m = 0;
-    while (count > m) {
-        if (NUM_DIRECT_BLOCKS <= j) {
-            l = *((data_block_number *) fs->data_root[x->indirect].data+(j - NUM_DIRECT_BLOCKS) * sizeof(data_block_number));
+    x->size = *off + count;
+    while (l > *off) {
+        data_block curr_block;
+        if (NUM_DIRECT_BLOCKS > j) {
+            curr_block = fs->data_root[x->direct[j]];
         } else {
-            l = x->direct[j];
+            data_block_number *o = (data_block_number *)(fs->data_root + x->indirect);
+            curr_block = fs->data_root[o[j - NUM_DIRECT_BLOCKS]];
         }
-        size_t n = (count - m) > (sizeof(data_block) - k) ? (sizeof(data_block) - k) : (count - m);
-        memcpy(fs->data_root[l].data + k, buf + m, n);
+        size_t n = sizeof(data_block) - k;
+        n = ((l - *off) < (off_t)n) ? (l - *off) : n;
+        memcpy(curr_block.data, buf + n, n);
+        *off += n;
         m = m + n;
         k = 0;
-        j = j + 1;
+        ++j;
     }
-    *off = *off + count;
-    x->size = *off;
-    clock_gettime(CLOCK_REALTIME, &(x->mtim));
-    clock_gettime(CLOCK_REALTIME, &(x->atim));
-
-    return count;
+    clock_gettime(CLOCK_REALTIME, &x->mtim);
+    clock_gettime(CLOCK_REALTIME, &x->atim);
+    return m;
 }
 
 ssize_t minixfs_read(file_system *fs, const char *path, void *buf, size_t count,
                      off_t *off) {
-    const char *virtual_path = is_virtual_path(path);
-    if (virtual_path)
-        return minixfs_virtual_read(fs, virtual_path, buf, count, off);
-    // 'ere be treasure!
-    inode* x = get_inode(fs, path);
-    if (!x) {
+    const char *i = is_virtual_path(path);
+    if (i) {
+        return minixfs_virtual_read(fs, i, buf, count, off);
+    }
+    inode *x = get_inode(fs, path);
+    if (x == NULL) {
         errno = ENOENT;
         return -1;
     }
-    int j = *off / sizeof(data_block);
-    int k = *off % sizeof(data_block);
-    data_block_number l;
-    size_t m = 0;
-    if (x->size - *off < count) {
-        count = x->size - *off;
+    if (x->size <= (uint64_t)*off) {
+        return 0;
     }
-    while (count > m) {
-        if (NUM_DIRECT_BLOCKS <= j) {
-            l = *((data_block_number *) fs->data_root[x->indirect].data+(j - NUM_DIRECT_BLOCKS) * sizeof(data_block_number));
+
+    size_t k = *off % sizeof(data_block);
+                size_t j = *off / sizeof(data_block);
+    off_t l = ((*off + count) >= x->size) ? x->size : (*off + count);
+    size_t p = 0;
+    while (l > *off) {
+        data_block curr_block;
+        if (NUM_DIRECT_BLOCKS > j){
+            curr_block = fs->data_root[x->direct[j]];
         } else {
-            l = x->direct[j];
+            data_block_number *o = (data_block_number *)(fs->data_root + x->indirect);
+            curr_block = fs->data_root[o[j - NUM_DIRECT_BLOCKS]];
         }
-        size_t n = (count - m) > (sizeof(data_block) - k) ? (sizeof(data_block) - k) : (count - m);
-        memcpy(fs->data_root[l].data + k, buf + m, n);
-        m = m + n;
+        size_t q = sizeof(data_block) - k;
+        q = ((l - *off) < (off_t)q) ? (l - *off) : q;
+        memcpy(buf + p, curr_block.data, q);
+        *off += q;
+        p = p + q;
         k = 0;
-        j = j + 1;
+        ++j;
     }
-    *off = *off + m;
-    clock_gettime(CLOCK_REALTIME, &(x->atim));
-    return m;
-
-
-    return -1;
+    clock_gettime(CLOCK_REALTIME, &x->atim);
+    return p;
 }
