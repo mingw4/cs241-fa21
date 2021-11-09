@@ -66,20 +66,16 @@ int minixfs_chmod(file_system *fs, char *path, int new_permissions) {
 // fail when passing -1 for the uid and gid
 int minixfs_chown(file_system *fs, char *path, uid_t owner, gid_t group) {
     // Land ahoy!
-    if (-1 == access(path, F_OK)) {
-        errno = ENOENT;
-        return -1;
-    }
     inode* x = get_inode(fs, path);
-    if (x != NULL) {
-        if (owner != (uid_t) -1) {
-            x->uid = owner;
-        }
-        if (group != (gid_t) -1) {
-            x->gid = group;
-        }
+    if (x) {
+       
+        x->uid = (owner != x->uid - 1) ? owner : x->uid;
+        x->gid = (group != x->gid - 1) ? group : x->gid;
         clock_gettime(CLOCK_REALTIME, &x->ctim);
         return 0;
+    }
+    if ( -1 == access(path,F_OK)) {
+        errno = ENOENT;
     }
     return -1;
 }
