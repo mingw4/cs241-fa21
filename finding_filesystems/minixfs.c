@@ -15,8 +15,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/time.h>
-#include <sys/stat.h>
 #include <time.h>
 
 
@@ -86,7 +84,7 @@ int minixfs_chown(file_system *fs, char *path, uid_t owner, gid_t group) {
 
 inode *minixfs_create_inode_for_path(file_system *fs, const char *path) {
     // Land ahoy!
-    if (!valid_filename(path) || get_inode(fs, path)) {
+    if (valid_filename(path) != 1 || get_inode(fs, path)) {
         return NULL;
     }
     const char *fn;
@@ -99,9 +97,11 @@ inode *minixfs_create_inode_for_path(file_system *fs, const char *path) {
     s.name = strdup(fn);
     s.inode_num = j;
     int k = p->size / sizeof(data_block);
+    int n = p->size % sizeof(data_block);
     if (NUM_DIRECT_BLOCKS <= k) {
         l = p->indirect;
-        make_string_from_dirent(fs->data_root[*(fs->data_root[l].data+(k-NUM_DIRECT_BLOCKS)*sizeof(data_block_number))].data + (p->size%sizeof(data_block)), s);
+        data_block_number m = *((data_block_number *) fs->data_root[l].data+(k - NUM_DIRECT_BLOCKS) * sizeof(data_block_number));
+        make_string_from_dirent(fs->data_root[m].data + n, s);
     } else {
         l = p->direct[k];
         make_string_from_dirent(fs->data_root[l].data + (p->size % sizeof(data_block)), s);
@@ -122,10 +122,11 @@ ssize_t minixfs_virtual_read(file_system *fs, const char *path, void *buf,
             }
         }
         char* info = block_info_string(num);
-        if (strlen(info) < *off) {
+        size_t length = strlen(info);
+        if (((int)length) < *off) {
             return 0;
         }
-        if (strlen(info) - *off < count) {
+        if (length - *off < count) {
             count = strlen(info - *off);
         }
         memmove(buf, info + *off, count);
