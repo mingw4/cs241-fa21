@@ -4,6 +4,7 @@
  */
 #include "minixfs.h"
 #include "minixfs_utils.h"
+<<<<<<< HEAD
 #include "includes/compare.h"
 #include "includes/callbacks.h"
 #include "includes/dictionary.h"
@@ -19,12 +20,20 @@
 
 
 
+=======
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 
 /**
  * Virtual paths:
  *  Add your new virtual endpoint to minixfs_virtual_path_names
  */
+<<<<<<< HEAD
 //Good
+=======
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 char *minixfs_virtual_path_names[] = {"info", /* add your paths here*/};
 
 /**
@@ -51,6 +60,7 @@ int minixfs_virtual_path_count =
 
 int minixfs_chmod(file_system *fs, char *path, int new_permissions) {
     // Thar she blows!
+<<<<<<< HEAD
     inode* x = get_inode(fs, path);
     if (x) {
         x->mode = new_permissions | ((x->mode >> RWX_BITS_NUMBER) << RWX_BITS_NUMBER);
@@ -77,11 +87,19 @@ int minixfs_chown(file_system *fs, char *path, uid_t owner, gid_t group) {
     if ( -1 == access(path,F_OK)) {
         errno = ENOENT;
     }
+=======
+    return 0;
+}
+
+int minixfs_chown(file_system *fs, char *path, uid_t owner, gid_t group) {
+    // Land ahoy!
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
     return -1;
 }
 
 inode *minixfs_create_inode_for_path(file_system *fs, const char *path) {
     // Land ahoy!
+<<<<<<< HEAD
     if (valid_filename(path) != 1 || get_inode(fs, path)) {
         return NULL;
     }
@@ -106,12 +124,16 @@ inode *minixfs_create_inode_for_path(file_system *fs, const char *path) {
     }
     free(s.name);
     return fs->inode_root + j;
+=======
+    return NULL;
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 }
 
 ssize_t minixfs_virtual_read(file_system *fs, const char *path, void *buf,
                              size_t count, off_t *off) {
     if (!strcmp(path, "info")) {
         // TODO implement the "info" virtual file here
+<<<<<<< HEAD
         char* dtmp = GET_DATA_MAP(fs->meta);
         ssize_t num = 0;
         for (uint64_t j = 0; j < fs->meta->dblock_count; j++) {
@@ -135,6 +157,8 @@ ssize_t minixfs_virtual_read(file_system *fs, const char *path, void *buf,
     if (x == NULL) {
         errno = ENOENT;
         return -1;
+=======
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
     }
 
     errno = ENOENT;
@@ -143,6 +167,7 @@ ssize_t minixfs_virtual_read(file_system *fs, const char *path, void *buf,
 
 ssize_t minixfs_write(file_system *fs, const char *path, const void *buf,
                       size_t count, off_t *off) {
+<<<<<<< HEAD
     inode *x = get_inode(fs, path);
     if (x == NULL) {
         x = minixfs_create_inode_for_path(fs, path);
@@ -184,10 +209,15 @@ ssize_t minixfs_write(file_system *fs, const char *path, const void *buf,
     clock_gettime(CLOCK_REALTIME, &x->mtim);
     clock_gettime(CLOCK_REALTIME, &x->atim);
     return m;
+=======
+    // X marks the spot
+    return -1;
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 }
 
 ssize_t minixfs_read(file_system *fs, const char *path, void *buf, size_t count,
                      off_t *off) {
+<<<<<<< HEAD
     const char *i = is_virtual_path(path);
     if (i) {
         return minixfs_virtual_read(fs, i, buf, count, off);
@@ -223,4 +253,11 @@ ssize_t minixfs_read(file_system *fs, const char *path, void *buf, size_t count,
     }
     clock_gettime(CLOCK_REALTIME, &x->atim);
     return p;
+=======
+    const char *virtual_path = is_virtual_path(path);
+    if (virtual_path)
+        return minixfs_virtual_read(fs, virtual_path, buf, count, off);
+    // 'ere be treasure!
+    return -1;
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 }

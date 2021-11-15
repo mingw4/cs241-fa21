@@ -2,7 +2,11 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
+<<<<<<< HEAD
 //Partner: mingw4, shunl2, qz13
+=======
+
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 #include <errno.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -10,9 +14,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+<<<<<<< HEAD
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
+=======
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 
 #include "chat_window.h"
 #include "utils.h"
@@ -30,8 +40,11 @@ void close_program(int signal);
  */
 void close_server_connection() {
     // Your code here
+<<<<<<< HEAD
     shutdown(serverSocket, SHUT_RDWR);
     close(serverSocket);
+=======
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 }
 
 /**
@@ -44,6 +57,7 @@ void close_server_connection() {
  * Returns integer of valid file descriptor, or exit(1) on failure.
  */
 int connect_to_server(const char *host, const char *port) {
+<<<<<<< HEAD
     int toreturn = socket(AF_INET, SOCK_STREAM, 0);
     if (toreturn == -1) {
         fprintf(stderr, "ERROR: failed to create client socket\n");
@@ -66,6 +80,19 @@ int connect_to_server(const char *host, const char *port) {
     }
     freeaddrinfo(output);
     return toreturn;
+=======
+    /*QUESTION 1*/
+    /*QUESTION 2*/
+    /*QUESTION 3*/
+
+    /*QUESTION 4*/
+    /*QUESTION 5*/
+
+    /*QUESTION 6*/
+
+    /*QUESTION 7*/
+    return -1;
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 }
 
 typedef struct _thread_cancel_args {

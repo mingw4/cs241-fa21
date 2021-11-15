@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 #include "utils.h"
 #include <sys/stat.h>
@@ -95,3 +96,32 @@ int main(int argc, char **argv) {
     print_num_lines(argv[2]);
     return 0;
 }
+=======
+/**
+ * mapreduce
+ * CS 241 - Fall 2021
+ */
+#include "utils.h"
+
+int main(int argc, char **argv) {
+    // Create an input pipe for each mapper.
+
+    // Create one input pipe for the reducer.
+
+    // Open the output file.
+
+    // Start a splitter process for each mapper.
+
+    // Start all the mapper processes.
+
+    // Start the reducer process.
+
+    // Wait for the reducer to finish.
+
+    // Print nonzero subprocess exit codes.
+
+    // Count the number of lines in the output file.
+
+    return 0;
+}
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726

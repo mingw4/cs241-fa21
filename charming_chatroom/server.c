@@ -2,7 +2,10 @@
  * charming_chatroom
  * CS 241 - Fall 2021
  */
+<<<<<<< HEAD
 //Partner: mingw4, shunl2, qz13
+=======
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
@@ -15,7 +18,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 #include "utils.h"
 
 #define MAX_CLIENTS 8
@@ -77,6 +83,7 @@ void cleanup() {
  *    - perror() for any other call
  */
 void run_server(char *port) {
+<<<<<<< HEAD
     /* set up variables */
     pthread_t tids[MAX_CLIENTS];
     int temp = socket(AF_INET, SOCK_STREAM, 0);
@@ -135,6 +142,21 @@ void run_server(char *port) {
         pthread_create(tids+aa, NULL, process_client, (void*)aa);
         pthread_mutex_unlock(&mutex);
     }
+=======
+    /*QUESTION 1*/
+    /*QUESTION 2*/
+    /*QUESTION 3*/
+
+    /*QUESTION 8*/
+
+    /*QUESTION 4*/
+    /*QUESTION 5*/
+    /*QUESTION 6*/
+
+    /*QUESTION 9*/
+
+    /*QUESTION 10*/
+>>>>>>> 4436f66eb76fc529874de9b4e4594288f5e21726
 }
 
 /**
