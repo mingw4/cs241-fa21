@@ -22,6 +22,7 @@ int recur_search(uint32_t os_, FILE *f_, char *w_) {
 	fseek(f_, os_, SEEK_SET);
 	BinaryTreeNode n_;
 	fread(&n_, sizeof(BinaryTreeNode), 1, f_);
+	fseek(f_, sizeof(BinaryTreeNode) + os_, SEEK_SET);
 	char n_w[10];
 	if (0 < strcmp(w_, n_w)) {
 		if (recur_search(n_.right_child, f_, w_)) {
