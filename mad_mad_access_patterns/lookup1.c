@@ -24,6 +24,7 @@ int recur_search(uint32_t os_, FILE *f_, char *w_) {
 	fread(&n_, sizeof(BinaryTreeNode), 1, f_);
 	fseek(f_, sizeof(BinaryTreeNode) + os_, SEEK_SET);
 	char n_w[10];
+	fread(n_w, 10, 1, f_);
 	if (0 < strcmp(w_, n_w)) {
 		if (recur_search(n_.right_child, f_, w_)) {
 			return 1;
@@ -34,6 +35,7 @@ int recur_search(uint32_t os_, FILE *f_, char *w_) {
 		}
 	} else {
 		printFound(n_w, n_.count, n_.price);
+		return 1;
 	}
 	return 0;
 }
