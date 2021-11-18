@@ -41,6 +41,7 @@ BinaryTreeNode * recur_search (uint32_t os_, char* addr_, char* w_) {
 	} else {
 		return n_;
 	}
+	return 0;
 }
 
 int main(int argc, char **argv) {
