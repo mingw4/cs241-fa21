@@ -21,7 +21,7 @@
 
 #include "format.h"
 #include "common.h"
-#include "dictionary.h"
+#include "includes/dictionary.h"
 
 #define BUFFER_SIZE 1024
 #define MAX_HEADER_SIZE (MAX_VERB_LEN + 1 + MAX_FILENAME_LEN + 1)
@@ -39,7 +39,6 @@ typedef enum {
 struct Connection {
     verb command;
     int sock_fd;
-    int remaining_reading_size; // Number of bytes remaining to read from the file.
     int remaining_size;    // Number of remaining bytes need to receive or send.
     uint8_t buffer[BUFFER_SIZE];
     uint8_t *list_buffer;
@@ -66,6 +65,9 @@ void get_pathname(char *buff, const char *filename);
 bool open_file(int epfd, Connection *conn, const char *filename);
 void read_file(int epfd, Connection *conn);
 void write_file(int epfd, Connection *conn);
+int find_filename(const char *filename);
+void add_filename(const char *filename);
+void finish_put(int epfd, Connection *conn);
 
 // Global variables.
 static char dir_name[16];
@@ -197,7 +199,6 @@ int prepare_socket(uint16_t port) {
 Connection *allocate_conn() {
     Connection *conn = malloc(sizeof(*conn));
     conn->sock_fd = -1;
-    conn->remaining_reading_size = 0;
     conn->remaining_size = 0;
     conn->list_buffer = NULL;
     conn->buff_size = 0;
@@ -261,7 +262,7 @@ bool open_file(int epfd, Connection *conn, const char *filename) {
         fd = open(pathname, O_RDONLY);
     }
 
-    if (fd == -1 || mark_non_block(fd) == -1) {
+    if (fd == -1) {
         LOG("cannot open the file %s", filename);
         perror(pathname);
         return false;
@@ -276,12 +277,11 @@ bool open_file(int epfd, Connection *conn, const char *filename) {
 // The file size has been received. Prepare reading the content of the uploaded file.
 void prepare_receive_file(int epfd, Connection *conn) {
     size_t content_size = *(size_t *)(conn->buffer);
-    copy_bytes(conn->buffer, conn->buffer + sizeof(size_t), conn->buff_size - sizeof(size_t));
-    conn->remaining_size = (int)content_size - (conn->buff_size - sizeof(size_t));
+    conn->remaining_size = (int)content_size - (conn->buff_size - (int)sizeof(size_t));
     conn->state = RECEIVING_DATA;
 
     LOG("(fd=%d) ready to receive file, total size = %lu, received size = %d, remaining size = %d",
-            conn->fd,
+            conn->sock_fd,
             content_size,
             conn->buff_size - (int)sizeof(size_t),
             conn->remaining_size);
@@ -291,13 +291,15 @@ void prepare_receive_file(int epfd, Connection *conn) {
         shutdown_connection(epfd, conn);
         return;
     }
-    if (epoll_ctl_wrapper(epfd, conn->fd, EPOLL_CTL_ADD, EPOLLOUT) == -1) {
-        perror("epoll_ctl");
-        shutdown_connection(epfd, conn);
-        return;
-    }
-    dictionary_set(fd_map, &conn->fd, conn);
+
     LOG("(fd=%d) the file '%s' has been opened", conn->sock_fd, conn->filename);
+    write(conn->fd, conn->buffer + sizeof(size_t), conn->buff_size - (int)sizeof(size_t));
+    conn->buff_size = 0;
+    conn->buff_offset = 0;
+
+    if (conn->remaining_size <= 0) {
+        finish_put(epfd, conn);
+    }
 }
 
 // PUT or DELETE
@@ -309,75 +311,6 @@ void prepare_send_ok(int epfd, Connection *conn) {
     conn->remaining_size = 3;
     conn->state = SENDING_DATA;
     strcpy((char *)conn->buffer, "OK\n");
-}
-
-// GET
-void read_file(int epfd, Connection *conn) {
-    if (conn->buff_offset >= conn->buff_size) {
-        // All data in the buffer has been sent to the client.
-        conn->buff_offset = 0;
-        conn->buff_size = 0;
-    } else if (conn->buff_size >= BUFFER_SIZE) {
-        // The buffer is full.
-        return;
-    }
-
-    int len = read(conn->fd, conn->buffer + conn->buff_size, BUFFER_SIZE - conn->buff_size);
-    if (len == -1) {
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            perror("read");
-            shutdown_connection(epfd, conn);            
-        }
-        return;
-    }
-
-    if (len == 0) {
-        // Unexpected end of file.
-        LOG("(fd=%d) Unexpected end of file.", conn->sock_fd);
-        shutdown_connection(epfd, conn);
-        return;
-    }
-
-    conn->buff_size += len;
-    conn->remaining_reading_size -= len;
-    if (conn->remaining_reading_size <= 0) {
-        // The whole file has been read.
-        close(conn->fd);
-        dictionary_remove(fd_map, &conn->fd);
-        conn->fd = -1;
-    }
-}
-
-// PUT
-void write_file(int epfd, Connection *conn) {
-    (void) epfd;
-    if (conn->buff_offset >= conn->buff_size) {
-        // All data in the buffer has been written to the file.
-        // Wait for more data.
-        return;
-    }
-
-    int len = write(conn->fd, conn->buffer + conn->buff_offset, conn->buff_size - conn->buff_offset);
-    if (len == -1) {
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            LOG("(fd=%d)failed to write the file.", conn->sock_fd);
-            perror("write");
-            shutdown_connection(epfd, conn);
-        }
-        return;
-    }
-
-    if (len == 0)
-        return;
-    conn->buff_offset += len;
-
-    if (conn->buff_offset >= conn->buff_size && conn->remaining_size <= 0) {
-        // All data of the file has been written to the file.
-        close(conn->fd);
-        dictionary_remove(fd_map, &conn->fd);
-        conn->fd = -1;
-        prepare_send_ok(epfd, conn);
-    }
 }
 
 // PUT
@@ -403,17 +336,9 @@ void receive_size(int epfd, Connection *conn) {
     }
 }
 
+// PUT
 void receive_data(int epfd, Connection *conn) {
-    if (conn->buff_offset >= conn->buff_size) {
-        // All data in the buffer has been written to the file.
-        conn->buff_offset = 0;
-        conn->buff_size = 0;
-    } else if (conn->buff_size >= BUFFER_SIZE) {
-        // The buffer is full. Wait until all data is written to the file.
-        return;
-    }
-
-    int len = read(conn->sock_fd, conn->buffer + conn->buff_size, BUFFER_SIZE - conn->buff_size);
+    int len = read(conn->sock_fd, conn->buffer, BUFFER_SIZE);
     if (len == -1) {
         if (errno != EAGAIN && errno != EWOULDBLOCK) {
             // There is an error.
@@ -427,36 +352,43 @@ void receive_data(int epfd, Connection *conn) {
         // Unexpected EOF. The file is too small.
         if (conn->remaining_size > 0) {
             send_error_message(epfd, conn, err_bad_file_size);
-        } else {
-            LOG("(f=%d) the whole content of the file '%s' has been received", conn->sock_fd, conn->filename);
-            shutdown(conn->sock_fd, SHUT_RD);
+            return;
         }
-        return;
+    } else {
+        write(conn->fd, conn->buffer, len);
+        conn->remaining_size -= len;
     }
-    conn->buff_size += len;
-    conn->remaining_size -= len;
+
     if (conn->remaining_size < 0) {
         // The file is too large.
         send_error_message(epfd, conn, err_bad_file_size);
+    } else if (conn->remaining_size == 0) {
+        finish_put(epfd, conn);
     }
 }
 
 void send_data(int epfd, Connection *conn) {
-    if (conn->buff_offset >= conn->buff_size) {
-        // All data in the buffer has been sent.
-        return;
-    }
-
     uint8_t *buff = conn->buffer;
     if (conn->list_buffer != NULL)
         buff = conn->list_buffer;
+
+    if (conn->buff_offset >= conn->buff_size && conn->command == GET && conn->remaining_size > 0) {
+        // Read data from the file.
+        int len = read(conn->fd, conn->buffer, BUFFER_SIZE);
+        if (len <= 0) {
+            // An error occurred.
+            shutdown_connection(epfd, conn);
+            return;
+        }
+        conn->buff_offset = 0;
+        conn->buff_size = len;
+    }
 
     int len = write(conn->sock_fd, buff + conn->buff_offset, conn->buff_size - conn->buff_offset);
     if (len == -1) {
         if (errno != EAGAIN && errno != EWOULDBLOCK) {
             perror("write");
             shutdown_connection(epfd, conn);
-            return;
         }
         return;
     }
@@ -465,10 +397,6 @@ void send_data(int epfd, Connection *conn) {
     conn->buff_offset += len;
     conn->remaining_size -= len;
     if (conn->remaining_size <= 0) {
-        if (conn->command == PUT) {
-            // Add the filename to the list of uploaded files.
-            vector_push_back(all_files, conn->filename);
-        }
         // All data has been sent to the client. It's time to shutdown the connection.
         shutdown_connection(epfd, conn);
     }
@@ -532,14 +460,8 @@ void prepare_list(int epfd, Connection *conn) {
 
 void prepare_delete(int epfd, Connection *conn, const char *filename) {
     // Find the filename.
-    int idx = 0;
-    VECTOR_FOR_EACH(all_files, thing, {
-        if (strcmp((const char *) thing, conn->filename) == 0) {
-            break;
-        }
-        ++idx;
-    });
-    if (idx >= (int) vector_size(all_files)) {
+    int idx = find_filename(filename);
+    if (idx == -1) {
         send_error_message(epfd, conn, err_no_such_file);
         return;
     }
@@ -554,14 +476,8 @@ void prepare_delete(int epfd, Connection *conn, const char *filename) {
 
 void prepare_get(int epfd, Connection *conn, const char *filename) {
     // Find the filename.
-    int idx = 0;
-    VECTOR_FOR_EACH(all_files, thing, {
-        if (strcmp((const char *) thing, conn->filename) == 0) {
-            break;
-        }
-        ++idx;
-    });
-    if (idx >= (int)vector_size(all_files)) {
+    int idx = find_filename(filename);
+    if (idx == -1) {
         // The file does not exist.
         send_error_message(epfd, conn, err_no_such_file);
         return;
@@ -572,14 +488,6 @@ void prepare_get(int epfd, Connection *conn, const char *filename) {
         shutdown_connection(epfd, conn);
         return;
     }
-
-    if (epoll_ctl_wrapper(epfd, conn->fd, EPOLL_CTL_ADD, EPOLLIN) == -1) {
-        perror("epoll_ctl");
-        shutdown_connection(epfd, conn);
-        return;
-    }
-
-    dictionary_set(fd_map, &conn->fd, conn);
 
     // Get the size of the file.
     struct stat stat;
@@ -595,7 +503,6 @@ void prepare_get(int epfd, Connection *conn, const char *filename) {
     size_t content_size = stat.st_size;
     conn->buff_offset = 0;
     // The number of bytes need to read from the file
-    conn->remaining_reading_size = content_size;
     conn->buff_size = 3 + sizeof(size_t);           // The size of the header.
     // Total number of bytes need to send to the client.
     conn->remaining_size = 3 + sizeof(size_t) + content_size;
@@ -703,8 +610,6 @@ void shutdown_connection(int epfd, Connection *conn) {
     close(conn->sock_fd);
     if (conn->fd != -1)
         close(conn->fd);
-    if (conn->fd != -1 && dictionary_contains(fd_map, &conn->fd))
-        dictionary_remove(fd_map, &conn->fd);
     release_conn(conn);
 }
 
@@ -720,7 +625,7 @@ void read_header(int epfd, Connection *conn) {
     }
 
     LOG("(fd=%d) received %d bytes of header, total received = %d",
-            conn->fd, len, conn->buff_size);
+            conn->sock_fd, len, conn->buff_size);
 
     if (len == 0) {
         // Unexpected eof.
@@ -753,41 +658,54 @@ void handle_event(int epfd, struct epoll_event *e) {
         return;
     }
 
-    if (conn->sock_fd == fd) {
-        switch (conn->state) {
-        case RECEIVING_HEADER:
-            read_header(epfd, conn);
-            break;
-        case RECEIVING_SIZE:
-            receive_size(epfd, conn);
-            break;
-        case RECEIVING_DATA:
-            assert(conn->command == PUT);
-            receive_data(epfd, conn);
-            break;
-        case SENDING_DATA:
-            send_data(epfd, conn);
-            break;
-        default:
-            break;
-        }
-    } else {
-        switch (conn->command) {
-        case PUT:
-            assert(conn->state == RECEIVING_DATA);
-            write_file(epfd, conn);
-            break;
-        case GET:
-            assert(conn->state == SENDING_DATA);
-            read_file(epfd, conn);
-            break;
-        default:
-            break;
-        }
+    switch (conn->state) {
+    case RECEIVING_HEADER:
+        read_header(epfd, conn);
+        break;
+    case RECEIVING_SIZE:
+        receive_size(epfd, conn);
+        break;
+    case RECEIVING_DATA:
+        assert(conn->command == PUT);
+        receive_data(epfd, conn);
+        break;
+    case SENDING_DATA:
+        send_data(epfd, conn);
+        break;
+    default:
+        break;
     }
 }
 
 void copy_bytes(uint8_t *dst, uint8_t *src, int size) {
     for (int i = 0; i < size; ++i)
         dst[i] = src[i];
+}
+
+int find_filename(const char *filename) {
+    int i = 0;
+    VECTOR_FOR_EACH(all_files, thing, {
+        if (strcmp(filename, (const char *)thing) == 0) {
+            break;
+        }
+        ++i;
+    });
+
+    if (i >= (int) vector_size(all_files))
+        return -1;
+    return i;
+}
+
+void add_filename(const char *filename) {
+    int idx = find_filename(filename);
+    if (idx >= 0) {
+        vector_set(all_files, idx, (void *)filename);
+    } else {
+        vector_push_back(all_files, (void *)filename);
+    }
+}
+
+void finish_put(int epfd, Connection *conn) {
+    add_filename(conn->filename);
+    prepare_send_ok(epfd, conn);
 }
