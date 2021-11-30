@@ -22,8 +22,7 @@
 
 #include "format.h"
 #include "common.h"
-#include "includes/dictionary.h"
-#include "includes/compare.h"
+#include "dictionary.h"
 
 #define BUFFER_SIZE 1024
 #define MAX_HEADER_SIZE (MAX_VERB_LEN + 1 + MAX_FILENAME_LEN + 1)
@@ -192,6 +191,19 @@ int prepare_socket(uint16_t port) {
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_fd == -1) {
         perror("socket");
+        return -1;
+    }
+
+    int enable = 1;
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1) {
+        perror("setsockopt");
+        close(sock_fd);
+        return -1;
+    }
+
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) == -1) {
+        perror("setsockopt");
+        close(sock_fd);
         return -1;
     }
 
