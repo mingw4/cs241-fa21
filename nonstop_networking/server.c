@@ -18,14 +18,16 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
+#include <signal.h>
 
 #include "format.h"
 #include "common.h"
 #include "includes/dictionary.h"
+#include "includes/compare.h"
 
 #define BUFFER_SIZE 1024
 #define MAX_HEADER_SIZE (MAX_VERB_LEN + 1 + MAX_FILENAME_LEN + 1)
-#define TEMP_DIR_TEMPLATE "server-XXXXXX"
+#define TEMP_DIR_TEMPLATE "XXXXXX"
 #define NUM_EVENTS 16
 
 typedef struct Connection Connection;
@@ -69,6 +71,8 @@ int find_filename(const char *filename);
 void add_filename(const char *filename);
 void finish_put(int epfd, Connection *conn);
 
+void sign_int_handle(int sig);
+
 // Global variables.
 static char dir_name[16];
 static int dir_name_len;
@@ -78,6 +82,14 @@ static vector *all_files;      // Vector of the filenames of all uploaded files.
 int main(int argc, char **argv) {
     if (argc != 2) {
         print_server_usage();
+        return 1;
+    }
+
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = sign_int_handle;
+    if (sigaction(SIGINT, &action, NULL) == -1) {
+        perror("sigaction");
         return 1;
     }
 
@@ -118,8 +130,12 @@ int main(int argc, char **argv) {
     while (true) {
         struct epoll_event events[NUM_EVENTS];
         int num_events = NUM_EVENTS;
-        if ((num_events = epoll_wait(epfd, events, NUM_EVENTS, -1)) <= 0)
+        if ((num_events = epoll_wait(epfd, events, NUM_EVENTS, -1)) <= 0) {
+            if (num_events == -1 && errno == EINTR) {
+                break;
+            }
             continue;
+        }
         for (int i = 0; i < num_events; ++i) {
             if (events[i].data.fd == sock_fd) {
                 // This is a new connection.
@@ -149,8 +165,18 @@ int main(int argc, char **argv) {
         }
     }
 
+    char pathname[MAX_FILENAME_LEN + 32];
+    VECTOR_FOR_EACH(all_files, thing, {
+        const char *filename = (const char *)thing;
+        get_pathname(pathname, filename);
+        unlink(pathname);
+    });
+
+    rmdir(dir_name);
+
     close(epfd);
     close(sock_fd);
+    vector_destroy(all_files);
     dictionary_destroy(fd_map);
 
     return 0;
@@ -608,6 +634,8 @@ void send_error_message(int epfd, Connection *conn, const char *msg) {
 void shutdown_connection(int epfd, Connection *conn) {
     (void) epfd;
     close(conn->sock_fd);
+    if (dictionary_contains(fd_map, &conn->sock_fd))
+        dictionary_remove(fd_map, &conn->sock_fd);
     if (conn->fd != -1)
         close(conn->fd);
     release_conn(conn);
@@ -629,6 +657,8 @@ void read_header(int epfd, Connection *conn) {
 
     if (len == 0) {
         // Unexpected eof.
+        LOG("(fd=%d) unexpected EOF while reading header. received size = %d",
+                conn->sock_fd, conn->buff_size);
         send_error_message(epfd, conn, err_bad_request);
         return;
     }
@@ -647,6 +677,7 @@ void read_header(int epfd, Connection *conn) {
         parse_header(epfd, conn, header_size);
     } else if (conn->buff_size >= MAX_HEADER_SIZE) {
         // The header is too long.
+        LOG("(fd=%d) header too long, received size = %d", conn->sock_fd, conn->buff_size);
         send_error_message(epfd, conn, err_bad_file_size);
     }
 }
@@ -709,3 +740,7 @@ void finish_put(int epfd, Connection *conn) {
     add_filename(conn->filename);
     prepare_send_ok(epfd, conn);
 }
+
+void sign_int_handle(int sig) {
+    (void) sig;
+};
