@@ -188,8 +188,8 @@ void scheduler_job_finished(job *job_done, double time) {
     n++;
     job_info* j_i_ = job_done->metadata;
     t_pend = t_pend - j_i_->dur_ - j_i_->reach_ + time;
-    t_rspd = t_rspd - j_i_->initiation_ - j_i_->reach_ + time;
-    period_ = period_ + time - j_i_->reach_;
+    t_rspd = t_rspd - j_i_->initiation_ - j_i_->reach_;
+    period_ = period_ - j_i_->reach_ + time;
     free(j_i_);
     priqueue_poll(&pqueue);
 }
