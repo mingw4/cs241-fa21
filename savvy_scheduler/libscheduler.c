@@ -27,7 +27,7 @@ typedef struct _job_info {
     double t_ini_;
     double reach_;
     double initiation_;
-    double place_;
+    int place_;
     double dur_;
 } job_info;
 
@@ -125,10 +125,10 @@ int comparer_rr(const void *a, const void *b) {
     // TODO: Implement me!
     job_info* j_i_a = ((job*) a)->metadata;
     job_info* j_i_b = ((job*) b)->metadata;
-    if (j_i_b->t_ini_ < j_i_a->t_ini_) {
+    if (j_i_b->initiation_ < j_i_a->initiation_) {
         return 1;
     }
-    if (j_i_b->t_ini_ > j_i_a->t_ini_) {
+    if (j_i_b->initiation_ > j_i_a->initiation_) {
         return -1;
     }
     return break_tie(a, b);
@@ -155,14 +155,13 @@ void scheduler_new_job(job *newjob, int job_number, double time,
     job_info *j_i_ = calloc(1,sizeof(job_info));
     j_i_->id = job_number;
     j_i_->dur_ = sched_data->running_time;
-    j_i_->t_ini_ = time;
+    j_i_->t_ini_ = -1;
     j_i_->place_ = sched_data->priority;
     j_i_->reach_ = time;
     j_i_->initiation_ = -1;
     j_i_->t_left_ = sched_data->running_time;
     newjob->metadata = j_i_;
     priqueue_offer(&pqueue, newjob);
-    n++;
 }
 
 job *scheduler_quantum_expired(job *job_evicted, double time) {
@@ -186,9 +185,10 @@ job *scheduler_quantum_expired(job *job_evicted, double time) {
 
 void scheduler_job_finished(job *job_done, double time) {
     // TODO: Implement me!
+    n++;
     job_info* j_i_ = job_done->metadata;
     t_pend = t_pend - j_i_->dur_ - j_i_->reach_ + time;
-    t_rspd = t_rspd - j_i_->initiation_ - j_i_->reach_ + time;
+    t_rspd = t_rspd - j_i_->t_ini_ - j_i_->reach_;
     period_ = period_ + time - j_i_->reach_;
     free(j_i_);
     priqueue_poll(&pqueue);
