@@ -9,12 +9,12 @@ assignments:
   charming_chatroom: false
   critical_concurrency: false
   deadlock_demolition: false
-  extreme_edge_cases: false
-  finding_filesystems: false
+  extreme_edge_cases: true
+  finding_filesystems: true
   ideal_indirection: false
   luscious_locks: false
   mad_mad_access_patterns: false
-  malloc: false
+  malloc: true
   mapreduce: false
   mini_memcheck: false
   parallel_make:
