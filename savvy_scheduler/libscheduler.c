@@ -170,7 +170,7 @@ job *scheduler_quantum_expired(job *job_evicted, double time) {
         return priqueue_peek(&pqueue);
     }
     job_info* j_i_ = job_evicted->metadata;
-    j_i_->t_ini_ = time;
+    j_i_->initiation_ = time;
     j_i_->t_left_ = j_i_->t_left_ - 1;
     if (0 > j_i_->t_ini_) {
         j_i_->t_ini_ = time - 1;
@@ -188,7 +188,7 @@ void scheduler_job_finished(job *job_done, double time) {
     n++;
     job_info* j_i_ = job_done->metadata;
     t_pend = t_pend - j_i_->dur_ - j_i_->reach_ + time;
-    t_rspd = t_rspd - j_i_->t_ini_ - j_i_->reach_;
+    t_rspd = t_rspd - j_i_->initiation_ - j_i_->reach_ + time;
     period_ = period_ + time - j_i_->reach_;
     free(j_i_);
     priqueue_poll(&pqueue);
