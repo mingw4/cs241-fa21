@@ -40,7 +40,7 @@ size_t n;
 priqueue_t pqueue;
 scheme_t pqueue_scheme;
 
-void scheduler_ini__up(scheme_t s) {
+void scheduler_start_up(scheme_t s) {
     switch (s) {
     case FCFS:
         comparision_func = comparer_fcfs;
