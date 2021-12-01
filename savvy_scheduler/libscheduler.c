@@ -132,7 +132,6 @@ int comparer_rr(const void *a, const void *b) {
         return -1;
     }
     return break_tie(a, b);
-    return 0;
 }
 
 int comparer_sjf(const void *a, const void *b) {
@@ -168,41 +167,19 @@ void scheduler_new_job(job *newjob, int job_number, double time,
 
 job *scheduler_quantum_expired(job *job_evicted, double time) {
     // TODO: Implement me!
-    job* j_ = priqueue_peek(&pqueue);
-    if (!j_ && !job_evicted) {
-        return NULL;
-    }
-    job_info* j_i_ = j_->metadata;
-    if (0 > j_i_->initiation_) {
-        j_i_->initiation_ = time;
-    }
-    if (j_ && !job_evicted) {
-        j_i_->t_ini_ = time;
-    }
-    if (RR == pqueue_scheme) {
-        priqueue_offer(&pqueue, j_);
-        priqueue_poll(&pqueue);
+    if (!job_evicted) {
         return priqueue_peek(&pqueue);
     }
-    if (PPRI == pqueue_scheme) {
-        if (j_ == job_evicted) {
-            return job_evicted;
-        } else {
-            return j_;
-        }
+    job_info* j_i_ = job_evicted->metadata;
+    j_i_->t_ini_ = time;
+    j_i_->t_left_ = j_i_->t_left_ - 1;
+    if (0 > j_i_->t_ini_) {
+        j_i_->t_ini_ = time - 1;
     }
-    if (PSRTF == pqueue_scheme) {
-        if (j_ == job_evicted) {
-            job_info* j_e_i_ = job_evicted->metadata;
-            j_e_i_ ->t_left_ = j_e_i_->t_left_ + j_e_i_->t_ini_ - time;
-            j_e_i_->t_ini_ = time;
-            return job_evicted;
-        } else {
-            job_info* j_e_i_ = job_evicted->metadata;
-            j_e_i_ ->t_left_ = j_e_i_->t_left_ + j_e_i_->t_ini_ - time;
-            j_i_->t_ini_ = time;
-            return j_;
-        }
+    if (RR == pqueue_scheme || PSRTF == pqueue_scheme || PPRI == pqueue_scheme) {
+        job* buffer = priqueue_poll(&pqueue);
+        priqueue_offer(&pqueue, buffer);
+        return priqueue_peek(&pqueue);
     }
     return job_evicted;
 }
