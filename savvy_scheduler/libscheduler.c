@@ -3,7 +3,7 @@
  * CS 241 - Fall 2021
  */
 
-//Partners: mingw4, shunl2, ...
+//Partners: mingw4, shunl2, qz13, zhichao8
 
 #include "libpriqueue/libpriqueue.h"
 #include "libscheduler.h"
