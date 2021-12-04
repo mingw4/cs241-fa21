@@ -92,6 +92,12 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    action.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &action, NULL) == -1) {
+        perror("sigaction");
+        return 1;
+    }
+
     fd_map = int_to_shallow_dictionary_create();
     all_files = string_vector_create();
 
