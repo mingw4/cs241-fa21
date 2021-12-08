@@ -15,12 +15,17 @@ Be awesome. Angrave.
 
 2.	What is the `*` operator in C? What is the `&` operator? Give an example of each.
 
+    '*' declares pointers, does multipliation, and dereference memory addresses.
+    '&' does bitwise and. '&' gives memory addresses.
 
 3.	When is `strlen(s)` != `1+strlen(s+1)` ?
+
+    When strlen(s) == 0. Namely when s = "".
 
 
 4.	How are C strings represented in memory? What is the wrong with `malloc(strlen(s))` when copying strings?
 
+    String is represented as null terminated character arrays in memory. It shall be malloc(strlen(s) + 1).
 
 5.	Implement a truncation function `void trunc(char*s,size_t max)` to ensure strings are not too long with the following edge cases.
 ```
@@ -48,9 +53,19 @@ else
 
 3.	What is the difference between the MMU and TLB? What is the purpose of each?
 
+    The differences between MMU and TLB is that MMU is used to translate memory from virtual to physical in kernel, while TLB is used to store virtual addresses translated to physical address, so that time to find page tables is reduced.
+
 4.	Assuming 4KB page tables what is the page number and offset for virtual address 0x12345678  ?
 
+    Page number: 0x12345
+    Offset: 0x678
+
 5.	What is a page fault? When is it an error? When is it not an error?
+
+    A page fault is a valid address with no mapping or mapping being in the disk.
+
+    It is an error when reading non-readable memory and when writing non-writable memory. It is not an error otherwise.
+
 
 6.	What is Spatial and Temporal Locality? Swapping? Swap file? Demand Paging?
 
