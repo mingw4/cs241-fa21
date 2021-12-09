@@ -73,22 +73,39 @@ else
 
 1.	What resources are shared between threads in the same process?
 
+    Resources that are shared between threads in the same process include: file descriptors, heap, variables, address space.
+
 2.	Explain the operating system actions required to perform a process context switch
+
 
 3.	Explain the actions required to perform a thread context switch to a thread in the same process
 
 4.	How can a process be orphaned? What does the process do about it?
 
+    A process can be orphaned by the original parent process finishing/terminated while the process is still running. The process will make itself adopted by the init system process.
+
 5.	How do you create a process zombie?
 
+    I create a process zombie by processing the parent process while not waiting for their child process(es).
+
 6.	Under what conditions will a multi-threaded process exit? (List at least 4)
+
+    (1) Return from main.
+    (2) exit() or abort().
+    (3) Segfault.
+    (4) pthread_exit() at the last thread.
 
 ## 4. Scheduling 
 1.	Define arrival time, pre-emption, turnaround time, waiting time and response time in the context of scheduling algorithms. What is starvation?  Which scheduling policies have the possibility of resulting in starvation?
 
 2.	Which scheduling algorithm results the smallest average wait time?
 
+    SJF: Shortest job first algorithm.
+
 3.	What scheduling algorithm has the longest average response time? shortest total wait time?
+
+    FCFS scheduling algorithm has the longest average response time.
+    SJF scheduling algorithm has the shortest total wait time.
 
 4.	Describe Round-Robin scheduling and its performance advantages and disadvantages.
 
@@ -104,7 +121,21 @@ else
 
 1.	Define circular wait, mutual exclusion, hold and wait, and no-preemption. How are these related to deadlock?
 
+    There are four necessary and sufﬁcient conditions for deadlock – meaning if these conditions hold then there is a non-zero probability that the system will deadlock at any given iteration. These are known as the Coffman Conditions [1].
+
+    • Mutual Exclusion: No two processes can obtain a resource at the same time.
+
+    • Circular Wait: There exists a cycle in the Resource Allocation Graph, or there exists a set of processes {P1, P2,...} such that P1 is waiting for resources held by P2, which is waiting for P3,..., which is waiting for P1. • Hold and Wait: Once a resource is obtained, a process keeps the resource locked.
+
+    • No pre-emption: Nothing can force the process to give up a resource.
+
+
+    They are related to deadlock since that if these four conditions hold then there is a non-zero probability that the system will deadlock at any given iteration.
+    //Cited from CS241_Textbook 8.2 Coffman Conditions.
+
 2.	What problem does the Banker's Algorithm solve?
+
+    The Banker's Algorithm solves the problem of deadlock avoidance.
 
 3.	What is the difference between Deadlock Prevention, Deadlock Detection and Deadlock Avoidance?
 
@@ -120,13 +151,21 @@ else
 
 1.	Write brief code to redirect future standard output to a file.
 
+    fd = open();
+    dup2(fd, STDOUT_FILENO);
+
 2.	Write a brief code example that uses dup2 and fork to redirect a child process output to a pipe
 
 3.	Give an example of kernel generated signal. List 2 calls that can a process can use to generate a SIGUSR1.
 
 4.	What signals can be caught or ignored?
 
+    All signals except SIGKILL and SIGSTOP can be caught or ignored.
+
 5.	What signals cannot be caught? What is signal disposition?
+
+    SIGKILL and SIGSTOP cannot be caught.
+    Signal disposition is an action occurs while deliveration of a signal to the process is completed.
 
 6.	Write code that uses sigaction and a signal set to create a SIGALRM handler.
 
@@ -146,11 +185,17 @@ else
 
 6.	How does TCP connection establishment work? And how does it affect latency in HTTP1.0 vs HTTP1.1?
 
+    TCP connection establishment works in 3-way handshake.
+    HTTP1.1 has a smaller latency than HTTP1.0 does, since HTTP1.1 can reuse connection and reduce handeshake's time.
+
 7.	Wrap a version of read in a loop to read up to 16KB into a buffer from a pipe or socket. Handle restarts (`EINTR`), and socket-closed events (return 0).
+
 
 8.	How is Domain Name System (DNS) related to IP and UDP? When does host resolution not cause traffic?
 
 9.	What is NAT and where and why is it used? 
+
+    NAT is Network Address Translation, and it is used because it can visualize internet protocol addresses more securely and it can distinct local and public IP addresses.
 
 ## 8. Files 
 
@@ -158,7 +203,13 @@ else
 
 2.	Write code that uses `open`, `fstat`, `mmap` to print in reverse the contents of a file to `stderr`.
 
+    
+
 3.	Write brief code to create a symbolic link and hard link to the file /etc/password
+
+    symlink("/etc/password", "TEST_SOFT_LINK.txt");
+
+    link("/etc/password", "TEST_HARD_LINK.txt");
 
 4.	"Creating a symlink in my home directory to the file /secret.txt succeeds but creating a hard link fails" Why? 
 
