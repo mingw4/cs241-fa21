@@ -104,7 +104,7 @@ void *malloc(size_t size) {
     } 
     meta_data *block = NULL;
     if (heads_[sizeOfList] != NULL) {
-        if (size > 512) {
+        if (size > 1024) {
             block = get_fit_best(size, sizeOfList);
         } else {
             block = get_fit_first(size, sizeOfList);
