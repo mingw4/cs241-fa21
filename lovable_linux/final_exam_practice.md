@@ -203,7 +203,7 @@ else
 
 2.	Write code that uses `open`, `fstat`, `mmap` to print in reverse the contents of a file to `stderr`.
 
-    
+
 
 3.	Write brief code to create a symbolic link and hard link to the file /etc/password
 
@@ -212,6 +212,8 @@ else
     link("/etc/password", "TEST_HARD_LINK.txt");
 
 4.	"Creating a symlink in my home directory to the file /secret.txt succeeds but creating a hard link fails" Why? 
+
+    It is because that /secret.txt is a folder or that /secret.txt dosn't exist, or that /secret.txt is on other filesystem instead of home directory.
 
 5.	Briefly explain permission bits (including sticky and setuid bits) for files and directories.
 
@@ -228,14 +230,31 @@ Assume 10 direct blocks, a pointer to an indirect block, double-indirect, and tr
 
 2.	How many i-node reads are required to fetch the file access time at /var/log/dmesg ? Assume the inode of (/) is cached in memory. Would your answer change if the file was created as a symbolic link? Hard link?
 
+
+
 3.	What information is stored in an i-node?  What file system information is not? 
 
 4.	Using a version of stat, write code to determine a file's size and return -1 if the file does not exist, return -2 if the file is a directory or -3 if it is a symbolic link.
 
 5.	If an i-node based file uses 10 direct and n single-indirect blocks (1 <= n <= 1024), what is the smallest and largest that the file contents can be in bytes? You can leave your answer as an expression.
 
+    The smallest = (10+(n-1)*1024)*(4KB)+1B.
+    The largest = (10+(n-1)*1024)*(4KB)+(4KB)*1024.
+
 6.	When would `fstat(open(path,O_RDONLY),&s)` return different information in s than `lstat(path,&s)`?
+
+    They would return differnet information when path is a symbolic link.
 
 ## 10. "I know the answer to one exam question because I helped write it"
 
 Create a hard but fair 'spot the lie/mistake' multiple choice or short-answer question. Ideally, 50% can get it correct.
+
+    Which statement is wrong? (A)
+
+    A. pthread_cond_wait will return if another thread calls finishes or joins another thread by calling pthread_exit or pthread_join.
+
+    B.  pthread_cond_wait requires a mutex lock to be initialized and locked by the calling thread.
+
+    C. On a POSIX system, such as Linux, by default each process has its own memory space which is automatically protected from other processes.
+
+    D. A fork bomb is a process (or its offspring) overloads the system by quickly creating a very large number of processes.
