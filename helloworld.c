@@ -1,4 +1,4 @@
-﻿//author: mingw4
+﻿//author:xxx
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
         int fp_r = open(argv[1], O_RDWR);
         
         if(fp_r == -1){
-	    printf("Hellow World\n");
+	    printf("Hello World\n");
 	    return 0;
 	}
         struct stat statbuf;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 	}
 	int fp = open(argv[1], O_RDWR);
 	if(fp == -1){
-	    printf("Hell0 World\n");
+	    printf("Hello World\n");
 	    return 0;
 	}
 
