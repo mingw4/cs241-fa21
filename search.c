@@ -1,4 +1,4 @@
-//author: 
+//author: mingw4
 
 #include <stdio.h>
 #include <stdlib.h>
